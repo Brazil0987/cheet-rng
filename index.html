@@ -172,13 +172,7 @@
     }
 
     .rolling {
-      animation: pulse 0.2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.08); }
-      100% { transform: scale(1); }
+      opacity: 0.85;
     }
 
     .tower-grid {
@@ -726,8 +720,13 @@
       document.getElementById("rollButton").disabled = true;
 
       let spinCount = 0;
-      let maxSpins = 65;
-      let delay = 3;
+
+      // Total roll time is about 2.5 seconds
+      let delays = [
+        25, 25, 25, 30, 30, 35, 35, 40, 40, 45,
+        50, 55, 60, 70, 80, 95, 110, 130, 155,
+        185, 220, 260, 310, 385
+      ];
 
       document.getElementById("resultName").classList.add("rolling");
       document.getElementById("resultImage").classList.add("rolling");
@@ -739,21 +738,14 @@
         document.getElementById("resultImage").src = randomItem.image;
         document.getElementById("resultChance").textContent = formatChance(randomItem.chance) + " chance";
 
-        spinCount++;
-
-        if (spinCount >= maxSpins) {
+        if (spinCount >= delays.length) {
           let finalItem = getRandomItem();
           finishRoll(finalItem);
           return;
         }
 
-        if (spinCount < 30) {
-          delay += 2;
-        } else if (spinCount < 50) {
-          delay += 22;
-        } else {
-          delay += 70;
-        }
+        let delay = delays[spinCount];
+        spinCount++;
 
         setTimeout(spin, delay);
       }
@@ -829,7 +821,7 @@
 
       autoRollTimer = setInterval(function() {
         rollItem();
-      }, 9000);
+      }, 3000);
     }
 
     function stopAutoRoll() {
