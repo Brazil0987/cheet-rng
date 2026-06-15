@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cheet🛖 RNG</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, #19351f 0%, #080808 45%, #030303 100%);
+      color: white;
+      text-align: center;
+    }
+
+    header {
+      padding: 25px;
+      border-bottom: 2px solid #3b1010;
+      position: relative;
+      background:
+        linear-gradient(90deg, #120000, #09200d, #120000);
+      box-shadow: 0 0 25px #7a1111;
+    }
+
+    h1 {
+      color: #49ff5a;
+      text-shadow:
+        0 0 8px #49ff5a,
+        0 0 18px #ff3030;
+      font-size: 42px;
+    }
+
+    .stats {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      text-align: left;
+    }
+
+    .stat-box {
+      border: 2px solid #49ff5a;
+      border-radius: 10px;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      color: #49ff5a;
+      box-shadow: 0 0 12px #49ff5a;
+      background: #071107;
+    }
+
+    .tabs {
+      margin: 25px auto;
+      border: 2px solid #49ff5a;
+      border-radius: 30px;
+      width: 420px;
+      display: flex;
+      overflow: hidden;
+      box-shadow: 0 0 15px #49ff5a;
+    }
+
+    .tabs button {
+      flex: 1;
+      padding: 15px;
+      background: #090909;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .tabs button.active {
+      background: #4d1010;
+      color: #49ff5a;
+      text-shadow: 0 0 8px #49ff5a;
+    }
+
+    .login-box {
+      margin: 15px auto;
+    }
+
+    .login-button, .logout-button {
+      padding: 12px 22px;
+      font-size: 17px;
+      border: 2px solid #49ff5a;
+      border-radius: 12px;
+      background: #111;
+      color: #49ff5a;
+      cursor: pointer;
+      box-shadow: 0 0 12px #49ff5a;
+      margin: 6px;
+    }
+
+    .logout-button {
+      border-color: #ff3030;
+      color: #ff3030;
+      box-shadow: 0 0 12px #ff3030;
+    }
+
+    .roll-area {
+      margin-bottom: 30px;
+    }
+
+    .roll-button, .auto-button, .stop-button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border: 2px solid #49ff5a;
+      border-radius: 15px;
+      background: #111;
+      color: #49ff5a;
+      cursor: pointer;
+      box-shadow: 0 0 12px #49ff5a;
+      margin: 6px;
+    }
+
+    .roll-button:hover, .auto-button:hover, .login-button:hover {
+      background: #102b12;
+    }
+
+    .stop-button {
+      border-color: #ff3030;
+      color: #ff3030;
+      box-shadow: 0 0 12px #ff3030;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .result-box {
+      margin: 20px auto;
+      width: 280px;
+      padding: 20px;
+      border-radius: 20px;
+      background: #101010;
+      border: 2px solid #4d1010;
+      box-shadow:
+        0 0 18px #49ff5a,
+        inset 0 0 18px #4d1010;
+    }
+
+    #resultName {
+      margin-top: 15px;
+      font-size: 28px;
+      color: #49ff5a;
+      text-shadow: 0 0 8px #49ff5a;
+    }
+
+    #resultImage {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      margin-top: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 20px #ff3030;
+      border: 3px solid #49ff5a;
+    }
+
+    #resultChance {
+      margin-top: 8px;
+      color: #ff8080;
+      font-size: 18px;
+    }
+
+    .rolling {
+      animation: pulse 0.2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.08);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .tower-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      padding: 20px;
+    }
+
+    .tower {
+      height: 190px;
+      border-radius: 14px;
+      background: #101010;
+      border: 2px solid #333;
+      box-shadow: 0 0 12px #333;
+      padding: 12px;
+    }
+
+    .tower img {
+      width: 75px;
+      height: 75px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #ffffff22;
+    }
+
+    .tower-name {
+      font-size: 18px;
+      margin-top: 8px;
+    }
+
+    .chance {
+      font-size: 16px;
+      color: #ddd;
+    }
+
+    .amount {
+      font-size: 17px;
+      margin-top: 3px;
+      color: #49ff5a;
+    }
+
+    .common {
+      box-shadow: 0 0 15px #777;
+    }
+
+    .rare {
+      background: #082747;
+      box-shadow: 0 0 18px #1e90ff;
+    }
+
+    .epic {
+      background: #30104b;
+      box-shadow: 0 0 18px #9b30ff;
+    }
+
+    .legendary {
+      background: #4a3b00;
+      box-shadow: 0 0 18px gold;
+    }
+
+    .mythic {
+      background: #3b0909;
+      border-color: #ff3030;
+      box-shadow:
+        0 0 20px #ff3030,
+        inset 0 0 15px #49ff5a;
+    }
+
+    .secret {
+      background: #06200a;
+      border-color: #49ff5a;
+      box-shadow:
+        0 0 25px #49ff5a,
+        0 0 35px #ff3030;
+    }
+
+    .locked {
+      background: #181818;
+      color: gray;
+      box-shadow: none;
+    }
+
+    .locked .question {
+      font-size: 35px;
+      color: white;
+      margin-top: 45px;
+    }
+
+    .leaderboard {
+      width: 98%;
+      margin: 20px auto;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 1fr 1fr;
+      align-items: center;
+      padding: 16px 25px;
+      margin-bottom: 10px;
+      background: #030303;
+      border: 2px solid #49ff5a;
+      border-radius: 12px;
+      box-shadow: 0 0 8px #49ff5a;
+      font-size: 18px;
+    }
+
+    .leaderboard-header {
+      color: #49ff5a;
+      font-weight: bold;
+    }
+
+    .rank {
+      color: white;
+    }
+
+    .best-tower {
+      color: red;
+      text-shadow: 0 0 8px red;
+    }
+
+    .small-note {
+      color: #aaa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="stats">
+      <div class="stat-box">Player: <span id="currentPlayer">Not signed in</span></div>
+      <div class="stat-box">Rolls: <span id="rollCount">0</span></div>
+      <div class="stat-box">Best: <span id="bestItem">None</span></div>
+    </div>
+
+    <h1>Cheet🛖 RNG</h1>
+  </header>
+
+  <div class="tabs">
+    <button onclick="showPage('roll')" class="active">Roll</button>
+    <button onclick="showPage('towers')">Towers</button>
+    <button onclick="showPage('leaderboard')">Leaderboard</button>
+  </div>
+
+  <div class="login-box">
+    <button id="loginButton" class="login-button" onclick="signInWithGoogle()">Sign in with Google</button>
+    <button id="logoutButton" class="logout-button" onclick="logOut()" style="display:none;">Log out</button>
+    <div class="small-note">Sign in before rolling. Your leaderboard score saves online.</div>
+  </div>
+
+  <div id="rollPage">
+    <div class="roll-area">
+      <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
+      <button class="auto-button" onclick="startAutoRoll()">AUTO ROLL</button>
+      <button class="stop-button" onclick="stopAutoRoll()">STOP</button>
+
+      <div class="result-box">
+        <div id="resultName">Sign in to roll!</div>
+        <img id="resultImage" src="chet.png">
+        <div id="resultChance"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="towersPage" style="display:none;">
+    <h2>Your Towers</h2>
+    <div class="tower-grid" id="towerGrid"></div>
+  </div>
+
+  <div id="leaderboardPage" style="display:none;">
+    <h2>Online Leaderboard</h2>
+    <div class="leaderboard" id="leaderboard"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoa6PZb3-au2I7KIUtHUWGZf2fg15JMPE",
+      authDomain: "cheet-rng.firebaseapp.com",
+      databaseURL: "https://cheet-rng-default-rtdb.firebaseio.com",
+      projectId: "cheet-rng",
+      storageBucket: "cheet-rng.firebasestorage.app",
+      messagingSenderId: "329471464023",
+      appId: "1:329471464023:web:edbab8aa08762b762a8912"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const items = [
+      {
+        name: "Scout",
+        image: "scout.png",
+        chance: 37.5563,
+        rarity: "common"
+      },
+      {
+        name: "Sniper",
+        image: "sniper.png",
+        chance: 25,
+        rarity: "common"
+      },
+      {
+        name: "Soldier",
+        image: "soldier.png",
+        chance: 15,
+        rarity: "rare"
+      },
+      {
+        name: "Minigunner",
+        image: "minigunner.png",
+        chance: 10,
+        rarity: "epic"
+      },
+      {
+        name: "Accelerator",
+        image: "accelerator.png",
+        chance: 4,
+        rarity: "legendary"
+      },
+      {
+        name: "5ouls",
+        image: "5ouls.png",
+        chance: 5,
+        rarity: "legendary"
+      },
+      {
+        name: "Brazil0987",
+        image: "brazil0987.png",
+        chance: 0.987,
+        rarity: "mythic"
+      },
+      {
+        name: "Wawacat4436",
+        image: "wawacat.png",
+        chance: 0.4436,
+        rarity: "mythic"
+      },
+      {
+        name: "Rezhexx",
+        image: "Rezhexx.png",
+        chance: 1,
+        rarity: "mythic"
+      },
+      {
+        name: "DankTDS",
+        image: "DankTDS.png",
+        chance: 1,
+        rarity: "mythic"
+      },
+      {
+        name: "Engineer",
+        image: "engineer.png",
+        chance: 0.013,
+        rarity: "mythic"
+      },
+      {
+        name: "Pookowski",
+        image: "chet.png",
+        chance: 0.0001,
+        rarity: "secret"
+      }
+    ];
+
+    let currentUser = null;
+    let inventory = {};
+    let rolls = 0;
+    let bestChance = 101;
+    let bestItem = "None";
+    let isRolling = false;
+    let autoRollTimer = null;
+    let leaderboardData = {};
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatChance(chance) {
+      return chance + "%";
+    }
+
+    async function signInWithGoogle() {
+      try {
+        await signInWithPopup(auth, provider);
+      } catch (error) {
+        alert("Sign-in failed: " + error.message);
+      }
+    }
+
+    async function logOut() {
+      stopAutoRoll();
+      await signOut(auth);
+    }
+
+    onAuthStateChanged(auth, async function(user) {
+      if (user) {
+        currentUser = user;
+
+        document.getElementById("loginButton").style.display = "none";
+        document.getElementById("logoutButton").style.display = "inline-block";
+        document.getElementById("rollButton").disabled = false;
+
+        await loadPlayer();
+
+      } else {
+        currentUser = null;
+        inventory = {};
+        rolls = 0;
+        bestChance = 101;
+        bestItem = "None";
+
+        document.getElementById("loginButton").style.display = "inline-block";
+        document.getElementById("logoutButton").style.display = "none";
+        document.getElementById("rollButton").disabled = true;
+
+        document.getElementById("currentPlayer").textContent = "Not signed in";
+        document.getElementById("rollCount").textContent = 0;
+        document.getElementById("bestItem").textContent = "None";
+        document.getElementById("resultName").textContent = "Sign in to roll!";
+        document.getElementById("resultImage").src = "chet.png";
+        document.getElementById("resultChance").textContent = "";
+
+        updateTowers();
+        updateLeaderboard();
+      }
+    });
+
+    async function loadPlayer() {
+      if (!currentUser) {
+        return;
+      }
+
+      const playerRef = ref(database, "leaderboard/" + currentUser.uid);
+      const snapshot = await get(playerRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+
+        rolls = data.rolls || 0;
+        bestItem = data.bestItem || "None";
+        bestChance = data.bestChance || 101;
+        inventory = data.inventory || {};
+      } else {
+        rolls = 0;
+        bestItem = "None";
+        bestChance = 101;
+        inventory = {};
+
+        await savePlayerData();
+      }
+
+      document.getElementById("currentPlayer").textContent = currentUser.displayName || "Player";
+      document.getElementById("rollCount").textContent = rolls;
+      document.getElementById("bestItem").textContent = bestItem;
+
+      updateTowers();
+      updateLeaderboard();
+    }
+
+    async function savePlayerData() {
+      if (!currentUser) {
+        return;
+      }
+
+      await set(ref(database, "leaderboard/" + currentUser.uid), {
+        uid: currentUser.uid,
+        name: currentUser.displayName || "Player",
+        rolls: rolls,
+        bestItem: bestItem,
+        bestChance: bestChance,
+        inventory: inventory
+      });
+    }
+
+    function rollItem() {
+      if (!currentUser) {
+        alert("Sign in first!");
+        return;
+      }
+
+      if (isRolling) {
+        return;
+      }
+
+      isRolling = true;
+      document.getElementById("rollButton").disabled = true;
+
+      let spinCount = 0;
+      let maxSpins = 20;
+
+      document.getElementById("resultName").classList.add("rolling");
+      document.getElementById("resultImage").classList.add("rolling");
+
+      let spin = setInterval(function() {
+        let randomItem = items[Math.floor(Math.random() * items.length)];
+
+        document.getElementById("resultName").textContent = randomItem.name;
+        document.getElementById("resultImage").src = randomItem.image;
+        document.getElementById("resultChance").textContent = formatChance(randomItem.chance) + " chance";
+
+        spinCount++;
+
+        if (spinCount >= maxSpins) {
+          clearInterval(spin);
+
+          let finalItem = getRandomItem();
+          finishRoll(finalItem);
+        }
+      }, 80);
+    }
+
+    async function finishRoll(item) {
+      rolls++;
+      document.getElementById("rollCount").textContent = rolls;
+
+      document.getElementById("resultName").textContent = item.name;
+      document.getElementById("resultImage").src = item.image;
+      document.getElementById("resultChance").textContent = formatChance(item.chance) + " chance";
+
+      document.getElementById("resultName").classList.remove("rolling");
+      document.getElementById("resultImage").classList.remove("rolling");
+
+      if (inventory[item.name]) {
+        inventory[item.name]++;
+      } else {
+        inventory[item.name] = 1;
+      }
+
+      if (item.chance < bestChance) {
+        bestChance = item.chance;
+        bestItem = item.name;
+        document.getElementById("bestItem").textContent = bestItem;
+      }
+
+      updateTowers();
+      await savePlayerData();
+
+      isRolling = false;
+
+      if (currentUser) {
+        document.getElementById("rollButton").disabled = false;
+      }
+    }
+
+    function getRandomItem() {
+      let random = Math.random() * 100;
+      let total = 0;
+
+      for (let item of items) {
+        total += item.chance;
+
+        if (random <= total) {
+          return item;
+        }
+      }
+
+      return items[0];
+    }
+
+    function startAutoRoll() {
+      if (!currentUser) {
+        alert("Sign in first!");
+        return;
+      }
+
+      if (autoRollTimer !== null) {
+        return;
+      }
+
+      rollItem();
+
+      autoRollTimer = setInterval(function() {
+        rollItem();
+      }, 2500);
+    }
+
+    function stopAutoRoll() {
+      clearInterval(autoRollTimer);
+      autoRollTimer = null;
+    }
+
+    function updateTowers() {
+      let grid = document.getElementById("towerGrid");
+      grid.innerHTML = "";
+
+      for (let item of items) {
+        let tower = document.createElement("div");
+
+        if (inventory[item.name]) {
+          tower.className = "tower " + item.rarity;
+
+          tower.innerHTML = `
+            <img src="${item.image}">
+            <div class="tower-name">${escapeHtml(item.name)}</div>
+            <div class="chance">${formatChance(item.chance)} chance</div>
+            <div class="amount">Owned: ${inventory[item.name]}</div>
+          `;
+        } else {
+          tower.className = "tower locked";
+
+          tower.innerHTML = `
+            <div class="question">???</div>
+            <div>Locked Tower</div>
+          `;
+        }
+
+        grid.appendChild(tower);
+      }
+    }
+
+    function updateLeaderboard() {
+      let leaderboard = document.getElementById("leaderboard");
+
+      let playerList = Object.keys(leaderboardData).map(function(key) {
+        return leaderboardData[key];
+      });
+
+      playerList.sort(function(a, b) {
+        return (b.rolls || 0) - (a.rolls || 0);
+      });
+
+      leaderboard.innerHTML = `
+        <div class="leaderboard-row leaderboard-header">
+          <div>Rank</div>
+          <div>Name</div>
+          <div>Rolls</div>
+          <div>Best Tower</div>
+        </div>
+      `;
+
+      if (playerList.length === 0) {
+        leaderboard.innerHTML += `
+          <div class="leaderboard-row">
+            <div>-</div>
+            <div>No players yet</div>
+            <div>-</div>
+            <div>-</div>
+          </div>
+        `;
+        return;
+      }
+
+      for (let i = 0; i < playerList.length; i++) {
+        let player = playerList[i];
+
+        leaderboard.innerHTML += `
+          <div class="leaderboard-row">
+            <div class="rank">#${i + 1}</div>
+            <div>${escapeHtml(player.name || "Unknown")}</div>
+            <div>${player.rolls || 0}</div>
+            <div class="best-tower">${escapeHtml(player.bestItem || "None")}</div>
+          </div>
+        `;
+      }
+    }
+
+    function showPage(page) {
+      document.getElementById("rollPage").style.display = "none";
+      document.getElementById("towersPage").style.display = "none";
+      document.getElementById("leaderboardPage").style.display = "none";
+
+      document.getElementById(page + "Page").style.display = "block";
+
+      let buttons = document.querySelectorAll(".tabs button");
+      buttons.forEach(button => button.classList.remove("active"));
+
+      if (page === "roll") buttons[0].classList.add("active");
+      if (page === "towers") buttons[1].classList.add("active");
+      if (page === "leaderboard") buttons[2].classList.add("active");
+
+      updateLeaderboard();
+    }
+
+    onValue(ref(database, "leaderboard"), function(snapshot) {
+      leaderboardData = snapshot.val() || {};
+      updateLeaderboard();
+    });
+
+    window.signInWithGoogle = signInWithGoogle;
+    window.logOut = logOut;
+    window.rollItem = rollItem;
+    window.startAutoRoll = startAutoRoll;
+    window.stopAutoRoll = stopAutoRoll;
+    window.showPage = showPage;
+
+    updateTowers();
+    updateLeaderboard();
+  </script>
+
+</body>
+</html>
