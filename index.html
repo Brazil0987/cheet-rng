@@ -73,11 +73,21 @@
       text-shadow: 0 0 8px #49ff5a;
     }
 
-    .login-box {
+    .login-box, .username-box {
       margin: 15px auto;
     }
 
-    .login-button, .logout-button {
+    .username-box input {
+      padding: 12px;
+      font-size: 17px;
+      border-radius: 10px;
+      border: 2px solid #49ff5a;
+      background: #050505;
+      color: white;
+      box-shadow: 0 0 8px #49ff5a;
+    }
+
+    .login-button, .logout-button, .save-button {
       padding: 12px 22px;
       font-size: 17px;
       border: 2px solid #49ff5a;
@@ -111,7 +121,7 @@
       margin: 6px;
     }
 
-    .roll-button:hover, .auto-button:hover, .login-button:hover {
+    .roll-button:hover, .auto-button:hover, .login-button:hover, .save-button:hover {
       background: #102b12;
     }
 
@@ -166,17 +176,9 @@
     }
 
     @keyframes pulse {
-      0% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.08);
-      }
-
-      100% {
-        transform: scale(1);
-      }
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
     }
 
     .tower-grid {
@@ -326,7 +328,13 @@
   <div class="login-box">
     <button id="loginButton" class="login-button" onclick="signInWithGoogle()">Sign in with Google</button>
     <button id="logoutButton" class="logout-button" onclick="logOut()" style="display:none;">Log out</button>
-    <div class="small-note">Sign in before rolling. Your leaderboard score saves online.</div>
+    <div class="small-note">Sign in, choose a username, then roll.</div>
+  </div>
+
+  <div id="usernameBox" class="username-box" style="display:none;">
+    <input id="usernameInput" placeholder="Choose username">
+    <button class="save-button" onclick="saveUsername()">Save Username</button>
+    <div class="small-note">Username must be 3–20 characters.</div>
   </div>
 
   <div id="rollPage">
@@ -355,7 +363,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -374,81 +382,82 @@
     const provider = new GoogleAuthProvider();
 
     const items = [
-  {
-    name: "Brawler",
-    image: "Brawler.png",
-    chance: 0.5,
-    rarity: "mythic"
-  },
-  {
-    name: "Freezer",
-    image: "Freezer.png",
-    chance: 15,
-    rarity: "rare"
-  },
-  {
-    name: "Hacker",
-    image: "Hacker.png",
-    chance: 10,
-    rarity: "epic"
-  },
-  {
-    name: "Gataling Goon",
-    image: "Gataling Goon.png",
-    chance: 60.0693,
-    rarity: "common"
-  },
-  {
-    name: "Accelerator",
-    image: "accelerator.png",
-    chance: 4,
-    rarity: "legendary"
-  },
-  {
-    name: "5ouls",
-    image: "5ouls.png",
-    chance: 5,
-    rarity: "legendary"
-  },
-  {
-    name: "Brazil0987",
-    image: "brazil0987.png",
-    chance: 0.987,
-    rarity: "mythic"
-  },
-  {
-    name: "Wawacat4436",
-    image: "wawacat.png",
-    chance: 0.4436,
-    rarity: "mythic"
-  },
-  {
-    name: "Rezhexx",
-    image: "Rezhexx.png",
-    chance: 1,
-    rarity: "mythic"
-  },
-  {
-    name: "DankTDS",
-    image: "DankTDS.png",
-    chance: 1,
-    rarity: "mythic"
-  },
-  {
-    name: "Engineer",
-    image: "engineer.png",
-    chance: 2,
-    rarity: "mythic"
-  },
-  {
-    name: "Pookowski",
-    image: "chet.png",
-    chance: 0.0001,
-    rarity: "secret"
-  }
-];
+      {
+        name: "Brawler",
+        image: "Brawler.png",
+        chance: 0.5,
+        rarity: "mythic"
+      },
+      {
+        name: "Freezer",
+        image: "Freezer.png",
+        chance: 15,
+        rarity: "rare"
+      },
+      {
+        name: "Hacker",
+        image: "Hacker.png",
+        chance: 10,
+        rarity: "epic"
+      },
+      {
+        name: "Gataling Goon",
+        image: "Gataling Goon.png",
+        chance: 60.0693,
+        rarity: "common"
+      },
+      {
+        name: "Accelerator",
+        image: "accelerator.png",
+        chance: 4,
+        rarity: "legendary"
+      },
+      {
+        name: "5ouls",
+        image: "5ouls.png",
+        chance: 5,
+        rarity: "legendary"
+      },
+      {
+        name: "Brazil0987",
+        image: "brazil0987.png",
+        chance: 0.987,
+        rarity: "mythic"
+      },
+      {
+        name: "Wawacat4436",
+        image: "wawacat.png",
+        chance: 0.4436,
+        rarity: "mythic"
+      },
+      {
+        name: "Rezhexx",
+        image: "Rezhexx.png",
+        chance: 1,
+        rarity: "mythic"
+      },
+      {
+        name: "DankTDS",
+        image: "DankTDS.png",
+        chance: 1,
+        rarity: "mythic"
+      },
+      {
+        name: "Engineer",
+        image: "engineer.png",
+        chance: 2,
+        rarity: "mythic"
+      },
+      {
+        name: "Pookowski",
+        image: "chet.png",
+        chance: 0.0001,
+        rarity: "secret"
+      }
+    ];
 
     let currentUser = null;
+    let username = "";
     let inventory = {};
     let rolls = 0;
     let bestChance = 101;
@@ -470,6 +479,14 @@
       return chance + "%";
     }
 
+    function cleanUsername(name) {
+      return name.trim().replace(/[^a-zA-Z0-9_]/g, "");
+    }
+
+    function hasUsername() {
+      return username && username.length >= 3;
+    }
+
     async function signInWithGoogle() {
       try {
         await signInWithPopup(auth, provider);
@@ -489,12 +506,11 @@
 
         document.getElementById("loginButton").style.display = "none";
         document.getElementById("logoutButton").style.display = "inline-block";
-        document.getElementById("rollButton").disabled = false;
 
         await loadPlayer();
-
       } else {
         currentUser = null;
+        username = "";
         inventory = {};
         rolls = 0;
         bestChance = 101;
@@ -502,6 +518,7 @@
 
         document.getElementById("loginButton").style.display = "inline-block";
         document.getElementById("logoutButton").style.display = "none";
+        document.getElementById("usernameBox").style.display = "none";
         document.getElementById("rollButton").disabled = true;
 
         document.getElementById("currentPlayer").textContent = "Not signed in";
@@ -527,24 +544,72 @@
       if (snapshot.exists()) {
         const data = snapshot.val();
 
+        username = data.username || "";
         rolls = data.rolls || 0;
         bestItem = data.bestItem || "None";
         bestChance = data.bestChance || 101;
         inventory = data.inventory || {};
       } else {
+        username = "";
         rolls = 0;
         bestItem = "None";
         bestChance = 101;
         inventory = {};
 
-        await savePlayerData();
+        await set(playerRef, {
+          uid: currentUser.uid,
+          username: "",
+          rolls: 0,
+          bestItem: "None",
+          bestChance: 101,
+          inventory: {}
+        });
       }
 
-      document.getElementById("currentPlayer").textContent = currentUser.displayName || "Player";
+      if (hasUsername()) {
+        document.getElementById("currentPlayer").textContent = username;
+        document.getElementById("usernameBox").style.display = "none";
+        document.getElementById("rollButton").disabled = false;
+        document.getElementById("resultName").textContent = "Click roll!";
+      } else {
+        document.getElementById("currentPlayer").textContent = "Choose username";
+        document.getElementById("usernameBox").style.display = "block";
+        document.getElementById("rollButton").disabled = true;
+        document.getElementById("resultName").textContent = "Choose a username first!";
+      }
+
+      document.getElementById("usernameInput").value = username;
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("bestItem").textContent = bestItem;
 
       updateTowers();
+      updateLeaderboard();
+    }
+
+    async function saveUsername() {
+      if (!currentUser) {
+        alert("Sign in first!");
+        return;
+      }
+
+      const typedName = cleanUsername(document.getElementById("usernameInput").value);
+
+      if (typedName.length < 3 || typedName.length > 20) {
+        alert("Username must be 3 to 20 letters/numbers. Underscores are allowed.");
+        return;
+      }
+
+      username = typedName;
+
+      await update(ref(database, "leaderboard/" + currentUser.uid), {
+        username: username
+      });
+
+      document.getElementById("currentPlayer").textContent = username;
+      document.getElementById("usernameBox").style.display = "none";
+      document.getElementById("rollButton").disabled = false;
+      document.getElementById("resultName").textContent = "Click roll!";
+
       updateLeaderboard();
     }
 
@@ -555,7 +620,7 @@
 
       await set(ref(database, "leaderboard/" + currentUser.uid), {
         uid: currentUser.uid,
-        name: currentUser.displayName || "Player",
+        username: username,
         rolls: rolls,
         bestItem: bestItem,
         bestChance: bestChance,
@@ -566,6 +631,12 @@
     function rollItem() {
       if (!currentUser) {
         alert("Sign in first!");
+        return;
+      }
+
+      if (!hasUsername()) {
+        alert("Choose a username first!");
+        document.getElementById("usernameBox").style.display = "block";
         return;
       }
 
@@ -628,7 +699,7 @@
 
       isRolling = false;
 
-      if (currentUser) {
+      if (currentUser && hasUsername()) {
         document.getElementById("rollButton").disabled = false;
       }
     }
@@ -654,6 +725,12 @@
         return;
       }
 
+      if (!hasUsername()) {
+        alert("Choose a username first!");
+        document.getElementById("usernameBox").style.display = "block";
+        return;
+      }
+
       if (autoRollTimer !== null) {
         return;
       }
@@ -674,7 +751,11 @@
       let grid = document.getElementById("towerGrid");
       grid.innerHTML = "";
 
-      for (let item of items) {
+      let sortedItems = [...items].sort(function(a, b) {
+        return a.chance - b.chance;
+      });
+
+      for (let item of sortedItems) {
         let tower = document.createElement("div");
 
         if (inventory[item.name]) {
@@ -704,6 +785,10 @@
 
       let playerList = Object.keys(leaderboardData).map(function(key) {
         return leaderboardData[key];
+      });
+
+      playerList = playerList.filter(function(player) {
+        return player.username && player.username.length >= 3;
       });
 
       playerList.sort(function(a, b) {
@@ -737,7 +822,7 @@
         leaderboard.innerHTML += `
           <div class="leaderboard-row">
             <div class="rank">#${i + 1}</div>
-            <div>${escapeHtml(player.name || "Unknown")}</div>
+            <div>${escapeHtml(player.username || "Unknown")}</div>
             <div>${player.rolls || 0}</div>
             <div class="best-tower">${escapeHtml(player.bestItem || "None")}</div>
           </div>
@@ -769,6 +854,7 @@
 
     window.signInWithGoogle = signInWithGoogle;
     window.logOut = logOut;
+    window.saveUsername = saveUsername;
     window.rollItem = rollItem;
     window.startAutoRoll = startAutoRoll;
     window.stopAutoRoll = stopAutoRoll;
