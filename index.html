@@ -250,6 +250,16 @@
         0 0 35px #ff3030;
     }
 
+    .cheeter {
+      background: linear-gradient(135deg, #001f0a, #4b0000, #002b10);
+      border-color: #00ff66;
+      color: white;
+      box-shadow:
+        0 0 30px #00ff66,
+        0 0 45px #ff0000,
+        inset 0 0 25px #00ff66;
+    }
+
     .locked {
       background: #181818;
       color: gray;
@@ -376,156 +386,37 @@
     const provider = new GoogleAuthProvider();
 
     const items = [
-      {
-        name: "Brawler",
-        image: "Brawler.png",
-        chance: 0.5,
-        rarity: "mythic"
-      },
-      {
-        name: "Freezer",
-        image: "Freezer.png",
-        chance: 15,
-        rarity: "rare"
-      },
-      {
-        name: "Hacker",
-        image: "Hacker.png",
-        chance: 10,
-        rarity: "epic"
-      },
-      {
-        name: "Gataling Goon",
-        image: "Gataling Goon.png",
-        chance: 57.22829,
-        rarity: "common"
-      },
-      {
-        name: "Accelerator",
-        image: "accelerator.png",
-        chance: 4,
-        rarity: "legendary"
-      },
-      {
-        name: "5ouls",
-        image: "5ouls.png",
-        chance: 5,
-        rarity: "legendary"
-      },
-      {
-        name: "Brazil0987",
-        image: "brazil0987.png",
-        chance: 0.987,
-        rarity: "mythic"
-      },
-      {
-        name: "Wawacat4436",
-        image: "wawacat.png",
-        chance: 0.4436,
-        rarity: "mythic"
-      },
-      {
-        name: "Rezhexx",
-        image: "Rezhexx.png",
-        chance: 1,
-        rarity: "mythic"
-      },
-      {
-        name: "DankTDS",
-        image: "DankTDS.png",
-        chance: 1,
-        rarity: "mythic"
-      },
-      {
-        name: "Engineer",
-        image: "engineer.png",
-        chance: 2,
-        rarity: "mythic"
-      },
-      {
-        name: "DIMIS_PLAYZ",
-        image: "DIMIS_PLAYZ.png",
-        chance: 0.01,
-        rarity: "secret"
-      },
-      {
-        name: "Artur Silva",
-        image: "Artur Silva.png",
-        chance: 0.05,
-        rarity: "secret"
-      },
-      {
-        name: "OhhStrike",
-        image: "OhhStrike.png",
-        chance: 0.5,
-        rarity: "mythic"
-      },
-      {
-        name: "epstain bros",
-        image: "epstain bros.png",
-        chance: 0.001,
-        rarity: "secret"
-      },
-      {
-        name: "NorthKorea0987",
-        image: "NorthKorea0987.png",
-        chance: 0.0001,
-        rarity: "secret"
-      },
-      {
-        name: "Kero",
-        image: "Kero.png",
-        chance: 0.5,
-        rarity: "mythic"
-      },
-      {
-        name: "ProfessionalNoLifer",
-        image: "ProfessionalNoLifer.png",
-        chance: 0.5,
-        rarity: "mythic"
-      },
-      {
-        name: "KanTDS",
-        image: "KanTDS.png",
-        chance: 0.2,
-        rarity: "secret"
-      },
-      {
-        name: "SuperDadPete83",
-        image: "SuperDadPete83.png",
-        chance: 0.005,
-        rarity: "secret"
-      },
-      {
-        name: "Truabgke",
-        image: "Truabgke.png",
-        chance: 0.67,
-        rarity: "mythic"
-      },
-      {
-        name: "Craigity3",
-        image: "Craigity3.png",
-        chance: 0.2,
-        rarity: "secret"
-      },
-      {
-        name: "CheeseV",
-        image: "CheeseV.png",
-        chance: 0.2,
-        rarity: "secret"
-      },
-      {
-        name: "Purple Trapper",
-        image: "Purple Trapper.png",
-        chance: 0.005,
-        rarity: "secret"
-      },
-      {
-        name: "Pookowski",
-        image: "chet.png",
-        chance: 0.00001,
-        rarity: "secret"
-      }
+      { name: "Brawler", image: "Brawler.png", chance: 0.5, rarity: "mythic" },
+      { name: "Freezer", image: "Freezer.png", chance: 15, rarity: "rare" },
+      { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
+      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 26.67319, rarity: "common" },
+      { name: "Accelerator", image: "accelerator.png", chance: 4, rarity: "legendary" },
+      { name: "5ouls", image: "5ouls.png", chance: 5, rarity: "legendary" },
+      { name: "Brazil0987", image: "brazil0987.png", chance: 0.987, rarity: "mythic" },
+      { name: "Wawacat4436", image: "wawacat.png", chance: 0.4436, rarity: "mythic" },
+      { name: "Rezhexx", image: "Rezhexx.png", chance: 1, rarity: "mythic" },
+      { name: "DankTDS", image: "DankTDS.png", chance: 1, rarity: "mythic" },
+      { name: "Engineer", image: "engineer.png", chance: 2, rarity: "mythic" },
+      { name: "DIMIS_PLAYZ", image: "DIMIS_PLAYZ.png", chance: 0.01, rarity: "secret" },
+      { name: "Artur Silva", image: "Artur Silva.png", chance: 0.05, rarity: "secret" },
+      { name: "OhhStrike", image: "OhhStrike.png", chance: 0.5, rarity: "mythic" },
+      { name: "epstain bros", image: "epstain bros.png", chance: 0.001, rarity: "secret" },
+      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 0.0001, rarity: "secret" },
+      { name: "Kero", image: "Kero.png", chance: 0.5, rarity: "mythic" },
+      { name: "ProfessionalNoLifer", image: "ProfessionalNoLifer.png", chance: 0.5, rarity: "mythic" },
+      { name: "KanTDS", image: "KanTDS.png", chance: 0.2, rarity: "secret" },
+      { name: "SuperDadPete83", image: "SuperDadPete83.png", chance: 0.005, rarity: "secret" },
+      { name: "Truabgke", image: "Truabgke.png", chance: 0.67, rarity: "mythic" },
+      { name: "Craigity3", image: "Craigity3.png", chance: 0.2, rarity: "secret" },
+      { name: "CheeseV", image: "CheeseV.png", chance: 0.2, rarity: "secret" },
+      { name: "Purple Trapper", image: "Purple Trapper.png", chance: 0.005, rarity: "secret" },
+
+      { name: "CORSO", image: "CORSO.png", chance: 5, rarity: "legendary" },
+      { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 20, rarity: "rare" },
+      { name: "Tom5551", image: "Tom5551.png", chance: 0.5551, rarity: "mythic" },
+      { name: "Eggrypted", image: "Eggrypted.png", chance: 5, rarity: "legendary" },
+
+      { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" }
     ];
 
     let currentUser = null;
@@ -575,10 +466,8 @@
     onAuthStateChanged(auth, async function(user) {
       if (user) {
         currentUser = user;
-
         document.getElementById("loginButton").style.display = "none";
         document.getElementById("logoutButton").style.display = "inline-block";
-
         await loadPlayer();
       } else {
         currentUser = null;
@@ -606,16 +495,13 @@
     });
 
     async function loadPlayer() {
-      if (!currentUser) {
-        return;
-      }
+      if (!currentUser) return;
 
       const playerRef = ref(database, "leaderboard/" + currentUser.uid);
       const snapshot = await get(playerRef);
 
       if (snapshot.exists()) {
         const data = snapshot.val();
-
         username = data.username || "";
         rolls = data.rolls || 0;
         bestItem = data.bestItem || "None";
@@ -686,9 +572,7 @@
     }
 
     async function savePlayerData() {
-      if (!currentUser) {
-        return;
-      }
+      if (!currentUser) return;
 
       await set(ref(database, "leaderboard/" + currentUser.uid), {
         uid: currentUser.uid,
@@ -712,16 +596,13 @@
         return;
       }
 
-      if (isRolling) {
-        return;
-      }
+      if (isRolling) return;
 
       isRolling = true;
       document.getElementById("rollButton").disabled = true;
 
       let spinCount = 0;
 
-      // Total roll time is about 2.5 seconds
       let delays = [
         25, 25, 25, 30, 30, 35, 35, 40, 40, 45,
         50, 55, 60, 70, 80, 95, 110, 130, 155,
@@ -792,10 +673,7 @@
 
       for (let item of items) {
         total += item.chance;
-
-        if (random <= total) {
-          return item;
-        }
+        if (random <= total) return item;
       }
 
       return items[0];
@@ -813,9 +691,7 @@
         return;
       }
 
-      if (autoRollTimer !== null) {
-        return;
-      }
+      if (autoRollTimer !== null) return;
 
       rollItem();
 
