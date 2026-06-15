@@ -47,7 +47,7 @@
       margin: 25px auto;
       border: 2px solid #49ff5a;
       border-radius: 30px;
-      width: 760px;
+      width: 620px;
       display: flex;
       overflow: hidden;
       box-shadow: 0 0 15px #49ff5a;
@@ -185,7 +185,7 @@
     }
 
     .tower {
-      height: 190px;
+      min-height: 210px;
       border-radius: 14px;
       background: #101010;
       border: 2px solid #333;
@@ -251,18 +251,6 @@
       border-color: #00ff66;
       color: white;
       box-shadow: 0 0 30px #00ff66, 0 0 45px #ff0000, inset 0 0 25px #00ff66;
-    }
-
-    .locked {
-      background: #181818;
-      color: gray;
-      box-shadow: none;
-    }
-
-    .locked .question {
-      font-size: 35px;
-      color: white;
-      margin-top: 45px;
     }
 
     .achievement {
@@ -338,7 +326,6 @@
   <div class="tabs">
     <button onclick="showPage('roll')" class="active">Roll</button>
     <button onclick="showPage('towers')">Towers</button>
-    <button onclick="showPage('index')">Index</button>
     <button onclick="showPage('achievements')">Achievements</button>
     <button onclick="showPage('leaderboard')">Leaderboard</button>
   </div>
@@ -372,13 +359,8 @@
   </div>
 
   <div id="towersPage" style="display:none;">
-    <h2>Your Towers</h2>
+    <h2>Your Unlocked Towers</h2>
     <div class="tower-grid" id="towerGrid"></div>
-  </div>
-
-  <div id="indexPage" style="display:none;">
-    <h2>Tower Index</h2>
-    <div class="tower-grid" id="indexGrid"></div>
   </div>
 
   <div id="achievementsPage" style="display:none;">
@@ -532,7 +514,6 @@
         document.getElementById("resultChance").textContent = "";
 
         updateTowers();
-        updateIndex();
         updateAchievements();
         updateLeaderboard();
       }
@@ -588,7 +569,6 @@
       document.getElementById("bestItem").textContent = bestItem;
 
       updateTowers();
-      updateIndex();
       updateAchievements();
       updateLeaderboard();
     }
@@ -731,7 +711,6 @@
 
       checkAchievements(item);
       updateTowers();
-      updateIndex();
       updateAchievements();
       await savePlayerData();
 
@@ -789,62 +768,26 @@
       });
 
       for (let item of sortedItems) {
-        let tower = document.createElement("div");
-
-        if (inventory[item.name]) {
-          tower.className = "tower " + item.rarity;
-
-          tower.innerHTML = `
-            <img src="${item.image}">
-            <div class="tower-name">${escapeHtml(item.name)}</div>
-            <div class="chance">${formatChance(item.chance)} chance</div>
-            <div class="amount">Owned: ${inventory[item.name]}</div>
-          `;
-        } else {
-          tower.className = "tower locked";
-
-          tower.innerHTML = `
-            <div class="question">???</div>
-            <div>Locked Tower</div>
-          `;
+        if (!inventory[item.name]) {
+          continue;
         }
+
+        let tower = document.createElement("div");
+        tower.className = "tower " + item.rarity;
+
+        tower.innerHTML = `
+          <img src="${item.image}">
+          <div class="tower-name">${escapeHtml(item.name)}</div>
+          <div class="chance">${formatChance(item.chance)} chance</div>
+          <div class="amount">Owned: ${inventory[item.name]}</div>
+          <div class="amount">Rarity: ${escapeHtml(item.rarity.toUpperCase())}</div>
+        `;
 
         grid.appendChild(tower);
       }
-    }
 
-    function updateIndex() {
-      let grid = document.getElementById("indexGrid");
-      if (!grid) return;
-
-      grid.innerHTML = "";
-
-      let sortedItems = [...items].sort(function(a, b) {
-        return a.chance - b.chance;
-      });
-
-      for (let item of sortedItems) {
-        let owned = inventory[item.name];
-        let card = document.createElement("div");
-
-        if (owned) {
-          card.className = "tower " + item.rarity;
-          card.innerHTML = `
-            <img src="${item.image}">
-            <div class="tower-name">${escapeHtml(item.name)}</div>
-            <div class="chance">${formatChance(item.chance)} chance</div>
-            <div class="amount">Unlocked ✅</div>
-          `;
-        } else {
-          card.className = "tower locked";
-          card.innerHTML = `
-            <div class="question">???</div>
-            <div>${formatChance(item.chance)} chance</div>
-            <div>Locked</div>
-          `;
-        }
-
-        grid.appendChild(card);
+      if (grid.innerHTML === "") {
+        grid.innerHTML = "<p>You have not unlocked any towers yet.</p>";
       }
     }
 
@@ -940,7 +883,6 @@
     function showPage(page) {
       document.getElementById("rollPage").style.display = "none";
       document.getElementById("towersPage").style.display = "none";
-      document.getElementById("indexPage").style.display = "none";
       document.getElementById("achievementsPage").style.display = "none";
       document.getElementById("leaderboardPage").style.display = "none";
 
@@ -951,12 +893,10 @@
 
       if (page === "roll") buttons[0].classList.add("active");
       if (page === "towers") buttons[1].classList.add("active");
-      if (page === "index") buttons[2].classList.add("active");
-      if (page === "achievements") buttons[3].classList.add("active");
-      if (page === "leaderboard") buttons[4].classList.add("active");
+      if (page === "achievements") buttons[2].classList.add("active");
+      if (page === "leaderboard") buttons[3].classList.add("active");
 
       updateTowers();
-      updateIndex();
       updateAchievements();
       updateLeaderboard();
     }
@@ -975,7 +915,6 @@
     window.showPage = showPage;
 
     updateTowers();
-    updateIndex();
     updateAchievements();
     updateLeaderboard();
   </script>
