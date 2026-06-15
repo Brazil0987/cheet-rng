@@ -253,6 +253,18 @@
       box-shadow: 0 0 30px #00ff66, 0 0 45px #ff0000, inset 0 0 25px #00ff66;
     }
 
+    .locked {
+      background: #181818;
+      color: gray;
+      box-shadow: none;
+    }
+
+    .locked .question {
+      font-size: 35px;
+      color: white;
+      margin-top: 45px;
+    }
+
     .achievement {
       min-height: 130px;
       border-radius: 14px;
@@ -359,7 +371,7 @@
   </div>
 
   <div id="towersPage" style="display:none;">
-    <h2>Your Unlocked Towers</h2>
+    <h2>Your Towers</h2>
     <div class="tower-grid" id="towerGrid"></div>
   </div>
 
@@ -768,26 +780,29 @@
       });
 
       for (let item of sortedItems) {
-        if (!inventory[item.name]) {
-          continue;
+        let tower = document.createElement("div");
+
+        if (inventory[item.name]) {
+          tower.className = "tower " + item.rarity;
+
+          tower.innerHTML = `
+            <img src="${item.image}">
+            <div class="tower-name">${escapeHtml(item.name)}</div>
+            <div class="chance">${formatChance(item.chance)} chance</div>
+            <div class="amount">Owned: ${inventory[item.name]}</div>
+            <div class="amount">Rarity: ${escapeHtml(item.rarity.toUpperCase())}</div>
+          `;
+        } else {
+          tower.className = "tower locked";
+
+          tower.innerHTML = `
+            <div class="question">???</div>
+            <div class="chance">${formatChance(item.chance)} chance</div>
+            <div>Locked Tower</div>
+          `;
         }
 
-        let tower = document.createElement("div");
-        tower.className = "tower " + item.rarity;
-
-        tower.innerHTML = `
-          <img src="${item.image}">
-          <div class="tower-name">${escapeHtml(item.name)}</div>
-          <div class="chance">${formatChance(item.chance)} chance</div>
-          <div class="amount">Owned: ${inventory[item.name]}</div>
-          <div class="amount">Rarity: ${escapeHtml(item.rarity.toUpperCase())}</div>
-        `;
-
         grid.appendChild(tower);
-      }
-
-      if (grid.innerHTML === "") {
-        grid.innerHTML = "<p>You have not unlocked any towers yet.</p>";
       }
     }
 
