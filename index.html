@@ -7,8 +7,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background:
-        radial-gradient(circle at top, #19351f 0%, #080808 45%, #030303 100%);
+      background: radial-gradient(circle at top, #19351f 0%, #080808 45%, #030303 100%);
       color: white;
       text-align: center;
     }
@@ -17,16 +16,13 @@
       padding: 25px;
       border-bottom: 2px solid #3b1010;
       position: relative;
-      background:
-        linear-gradient(90deg, #120000, #09200d, #120000);
+      background: linear-gradient(90deg, #120000, #09200d, #120000);
       box-shadow: 0 0 25px #7a1111;
     }
 
     h1 {
       color: #49ff5a;
-      text-shadow:
-        0 0 8px #49ff5a,
-        0 0 18px #ff3030;
+      text-shadow: 0 0 8px #49ff5a, 0 0 18px #ff3030;
       font-size: 42px;
     }
 
@@ -105,10 +101,6 @@
       box-shadow: 0 0 12px #ff3030;
     }
 
-    .roll-area {
-      margin-bottom: 30px;
-    }
-
     .roll-button, .auto-button, .stop-button {
       padding: 15px 30px;
       font-size: 18px;
@@ -119,10 +111,6 @@
       cursor: pointer;
       box-shadow: 0 0 12px #49ff5a;
       margin: 6px;
-    }
-
-    .roll-button:hover, .auto-button:hover, .login-button:hover, .save-button:hover {
-      background: #102b12;
     }
 
     .stop-button {
@@ -143,9 +131,7 @@
       border-radius: 20px;
       background: #101010;
       border: 2px solid #4d1010;
-      box-shadow:
-        0 0 18px #49ff5a,
-        inset 0 0 18px #4d1010;
+      box-shadow: 0 0 18px #49ff5a, inset 0 0 18px #4d1010;
     }
 
     #resultName {
@@ -173,6 +159,22 @@
 
     .rolling {
       opacity: 0.85;
+    }
+
+    .rarity-announcement {
+      display: none;
+      margin: 20px auto;
+      width: 80%;
+      max-width: 650px;
+      padding: 18px;
+      border-radius: 18px;
+      background: linear-gradient(90deg, #120000, #003b12, #120000);
+      border: 3px solid #49ff5a;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 0 25px #49ff5a, 0 0 35px #ff3030;
+      text-shadow: 0 0 10px #49ff5a;
     }
 
     .tower-grid {
@@ -215,9 +217,7 @@
       color: #49ff5a;
     }
 
-    .common {
-      box-shadow: 0 0 15px #777;
-    }
+    .common { box-shadow: 0 0 15px #777; }
 
     .rare {
       background: #082747;
@@ -237,27 +237,20 @@
     .mythic {
       background: #3b0909;
       border-color: #ff3030;
-      box-shadow:
-        0 0 20px #ff3030,
-        inset 0 0 15px #49ff5a;
+      box-shadow: 0 0 20px #ff3030, inset 0 0 15px #49ff5a;
     }
 
     .secret {
       background: #06200a;
       border-color: #49ff5a;
-      box-shadow:
-        0 0 25px #49ff5a,
-        0 0 35px #ff3030;
+      box-shadow: 0 0 25px #49ff5a, 0 0 35px #ff3030;
     }
 
     .cheeter {
       background: linear-gradient(135deg, #001f0a, #4b0000, #002b10);
       border-color: #00ff66;
       color: white;
-      box-shadow:
-        0 0 30px #00ff66,
-        0 0 45px #ff0000,
-        inset 0 0 25px #00ff66;
+      box-shadow: 0 0 30px #00ff66, 0 0 45px #ff0000, inset 0 0 25px #00ff66;
     }
 
     .locked {
@@ -352,6 +345,8 @@
         <img id="resultImage" src="chet.png">
         <div id="resultChance"></div>
       </div>
+
+      <div id="rarityAnnouncement" class="rarity-announcement"></div>
     </div>
   </div>
 
@@ -389,7 +384,7 @@
       { name: "Brawler", image: "Brawler.png", chance: 0.5, rarity: "mythic" },
       { name: "Freezer", image: "Freezer.png", chance: 15, rarity: "rare" },
       { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
-      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 26.67319, rarity: "common" },
+      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 26.66319, rarity: "common" },
       { name: "Accelerator", image: "accelerator.png", chance: 4, rarity: "legendary" },
       { name: "5ouls", image: "5ouls.png", chance: 5, rarity: "legendary" },
       { name: "Brazil0987", image: "brazil0987.png", chance: 0.987, rarity: "mythic" },
@@ -410,12 +405,11 @@
       { name: "Craigity3", image: "Craigity3.png", chance: 0.2, rarity: "secret" },
       { name: "CheeseV", image: "CheeseV.png", chance: 0.2, rarity: "secret" },
       { name: "Purple Trapper", image: "Purple Trapper.png", chance: 0.005, rarity: "secret" },
-
       { name: "CORSO", image: "CORSO.png", chance: 5, rarity: "legendary" },
       { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 20, rarity: "rare" },
       { name: "Tom5551", image: "Tom5551.png", chance: 0.5551, rarity: "mythic" },
       { name: "Eggrypted", image: "Eggrypted.png", chance: 5, rarity: "legendary" },
-
+      { name: "Platter Bros", image: "Platter Bros.png", chance: 0.01, rarity: "secret" },
       { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" }
     ];
 
@@ -584,6 +578,26 @@
       });
     }
 
+    function showRarityAnnouncement(item) {
+      let announcement = document.getElementById("rarityAnnouncement");
+
+      if (item.chance <= 0.1) {
+        if (item.rarity === "cheeter") {
+          announcement.textContent = "🚨 CHEETER TIER PULLED! " + username + " got " + item.name + "! 🚨";
+        } else {
+          announcement.textContent = "✨ 0.1% OR RARER PULLED! " + username + " got " + item.name + "! ✨";
+        }
+
+        announcement.style.display = "block";
+
+        setTimeout(function() {
+          announcement.style.display = "none";
+        }, 5000);
+      } else {
+        announcement.style.display = "none";
+      }
+    }
+
     function rollItem() {
       if (!currentUser) {
         alert("Sign in first!");
@@ -641,6 +655,8 @@
       document.getElementById("resultName").textContent = item.name;
       document.getElementById("resultImage").src = item.image;
       document.getElementById("resultChance").textContent = formatChance(item.chance) + " chance";
+
+      showRarityAnnouncement(item);
 
       document.getElementById("resultName").classList.remove("rolling");
       document.getElementById("resultImage").classList.remove("rolling");
