@@ -403,7 +403,7 @@
       {
         name: "Gataling Goon",
         image: "Gataling Goon.png",
-        chance: 60.0693,
+        chance: 57.22829,
         rarity: "common"
       },
       {
@@ -449,9 +449,87 @@
         rarity: "mythic"
       },
       {
+        name: "DIMIS_PLAYZ",
+        image: "DIMIS_PLAYZ.png",
+        chance: 0.01,
+        rarity: "secret"
+      },
+      {
+        name: "Artur Silva",
+        image: "Artur Silva.png",
+        chance: 0.05,
+        rarity: "secret"
+      },
+      {
+        name: "OhhStrike",
+        image: "OhhStrike.png",
+        chance: 0.5,
+        rarity: "mythic"
+      },
+      {
+        name: "epstain bros",
+        image: "epstain bros.png",
+        chance: 0.001,
+        rarity: "secret"
+      },
+      {
+        name: "NorthKorea0987",
+        image: "NorthKorea0987.png",
+        chance: 0.0001,
+        rarity: "secret"
+      },
+      {
+        name: "Kero",
+        image: "Kero.png",
+        chance: 0.5,
+        rarity: "mythic"
+      },
+      {
+        name: "ProfessionalNoLifer",
+        image: "ProfessionalNoLifer.png",
+        chance: 0.5,
+        rarity: "mythic"
+      },
+      {
+        name: "KanTDS",
+        image: "KanTDS.png",
+        chance: 0.2,
+        rarity: "secret"
+      },
+      {
+        name: "SuperDadPete83",
+        image: "SuperDadPete83.png",
+        chance: 0.005,
+        rarity: "secret"
+      },
+      {
+        name: "Truabgke",
+        image: "Truabgke.png",
+        chance: 0.67,
+        rarity: "mythic"
+      },
+      {
+        name: "Craigity3",
+        image: "Craigity3.png",
+        chance: 0.2,
+        rarity: "secret"
+      },
+      {
+        name: "CheeseV",
+        image: "CheeseV.png",
+        chance: 0.2,
+        rarity: "secret"
+      },
+      {
+        name: "Purple Trapper",
+        image: "Purple Trapper.png",
+        chance: 0.005,
+        rarity: "secret"
+      },
+      {
         name: "Pookowski",
         image: "chet.png",
-        chance: 0.0001,
+        chance: 0.00001,
         rarity: "secret"
       }
     ];
@@ -648,8 +726,8 @@
       document.getElementById("rollButton").disabled = true;
 
       let spinCount = 0;
-      let maxSpins = 28;
-      let delay = 40;
+      let maxSpins = 65;
+      let delay = 3;
 
       document.getElementById("resultName").classList.add("rolling");
       document.getElementById("resultImage").classList.add("rolling");
@@ -669,7 +747,14 @@
           return;
         }
 
-        delay += 12;
+        if (spinCount < 30) {
+          delay += 2;
+        } else if (spinCount < 50) {
+          delay += 22;
+        } else {
+          delay += 70;
+        }
+
         setTimeout(spin, delay);
       }
 
@@ -744,7 +829,7 @@
 
       autoRollTimer = setInterval(function() {
         rollItem();
-      }, 2500);
+      }, 9000);
     }
 
     function stopAutoRoll() {
