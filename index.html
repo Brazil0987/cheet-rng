@@ -217,7 +217,9 @@
       color: #49ff5a;
     }
 
-    .common { box-shadow: 0 0 15px #777; }
+    .common {
+      box-shadow: 0 0 15px #777;
+    }
 
     .rare {
       background: #082747;
@@ -269,19 +271,10 @@
       min-height: 130px;
       border-radius: 14px;
       background: #101010;
-      border: 2px solid #333;
-      box-shadow: 0 0 12px #333;
-      padding: 15px;
-    }
-
-    .achievement.unlocked {
-      border-color: #49ff5a;
+      border: 2px solid #49ff5a;
       box-shadow: 0 0 18px #49ff5a;
       color: #49ff5a;
-    }
-
-    .achievement.locked-achievement {
-      opacity: 0.45;
+      padding: 15px;
     }
 
     .leaderboard {
@@ -376,7 +369,7 @@
   </div>
 
   <div id="achievementsPage" style="display:none;">
-    <h2>Achievements</h2>
+    <h2>Completed Achievements</h2>
     <div class="tower-grid" id="achievementGrid"></div>
   </div>
 
@@ -831,17 +824,23 @@
       for (let achievement of achievementList) {
         let unlocked = achievements[achievement.id];
 
+        if (!unlocked) {
+          continue;
+        }
+
         let card = document.createElement("div");
-        card.className = unlocked
-          ? "achievement unlocked"
-          : "achievement locked-achievement";
+        card.className = "achievement";
 
         card.innerHTML = `
-          <h3>${unlocked ? "✅" : "🔒"} ${escapeHtml(achievement.name)}</h3>
+          <h3>✅ ${escapeHtml(achievement.name)}</h3>
           <p>${escapeHtml(achievement.description)}</p>
         `;
 
         grid.appendChild(card);
+      }
+
+      if (grid.innerHTML === "") {
+        grid.innerHTML = "<p>You have not completed any achievements yet.</p>";
       }
     }
 
