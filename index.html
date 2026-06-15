@@ -47,7 +47,7 @@
       margin: 25px auto;
       border: 2px solid #49ff5a;
       border-radius: 30px;
-      width: 420px;
+      width: 760px;
       display: flex;
       overflow: hidden;
       box-shadow: 0 0 15px #49ff5a;
@@ -60,7 +60,7 @@
       color: white;
       border: none;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
     }
 
     .tabs button.active {
@@ -265,6 +265,25 @@
       margin-top: 45px;
     }
 
+    .achievement {
+      min-height: 130px;
+      border-radius: 14px;
+      background: #101010;
+      border: 2px solid #333;
+      box-shadow: 0 0 12px #333;
+      padding: 15px;
+    }
+
+    .achievement.unlocked {
+      border-color: #49ff5a;
+      box-shadow: 0 0 18px #49ff5a;
+      color: #49ff5a;
+    }
+
+    .achievement.locked-achievement {
+      opacity: 0.45;
+    }
+
     .leaderboard {
       width: 98%;
       margin: 20px auto;
@@ -319,6 +338,8 @@
   <div class="tabs">
     <button onclick="showPage('roll')" class="active">Roll</button>
     <button onclick="showPage('towers')">Towers</button>
+    <button onclick="showPage('index')">Index</button>
+    <button onclick="showPage('achievements')">Achievements</button>
     <button onclick="showPage('leaderboard')">Leaderboard</button>
   </div>
 
@@ -353,6 +374,16 @@
   <div id="towersPage" style="display:none;">
     <h2>Your Towers</h2>
     <div class="tower-grid" id="towerGrid"></div>
+  </div>
+
+  <div id="indexPage" style="display:none;">
+    <h2>Tower Index</h2>
+    <div class="tower-grid" id="indexGrid"></div>
+  </div>
+
+  <div id="achievementsPage" style="display:none;">
+    <h2>Achievements</h2>
+    <div class="tower-grid" id="achievementGrid"></div>
   </div>
 
   <div id="leaderboardPage" style="display:none;">
@@ -413,9 +444,25 @@
       { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" }
     ];
 
+    const achievementList = [
+      { id: "firstRoll", name: "First Roll", description: "Roll 1 time" },
+      { id: "tenRolls", name: "10 Rolls", description: "Roll 10 times" },
+      { id: "hundredRolls", name: "100 Rolls", description: "Roll 100 times" },
+      { id: "thousandRolls", name: "1,000 Rolls", description: "Roll 1,000 times" },
+      { id: "tenThousandRolls", name: "10,000 Rolls", description: "Roll 10,000 times" },
+      { id: "hundredThousandRolls", name: "100,000 Rolls", description: "Roll 100,000 times" },
+      { id: "firstSecret", name: "First Secret", description: "Get any Secret tower" },
+      { id: "firstCheeter", name: "First Cheeter", description: "Get Pookowski" },
+      { id: "platterBros", name: "Platter Bros", description: "Get Platter Bros" },
+      { id: "epstainBros", name: "epstain bros", description: "Get epstain bros" },
+      { id: "dimis", name: "DIMIS_PLAYZ", description: "Get DIMIS_PLAYZ" },
+      { id: "johnRoblox", name: "JOHN ROBLOX", description: "Get JOHN ROBLOX" }
+    ];
+
     let currentUser = null;
     let username = "";
     let inventory = {};
+    let achievements = {};
     let rolls = 0;
     let bestChance = 101;
     let bestItem = "None";
@@ -467,6 +514,7 @@
         currentUser = null;
         username = "";
         inventory = {};
+        achievements = {};
         rolls = 0;
         bestChance = 101;
         bestItem = "None";
@@ -484,6 +532,8 @@
         document.getElementById("resultChance").textContent = "";
 
         updateTowers();
+        updateIndex();
+        updateAchievements();
         updateLeaderboard();
       }
     });
@@ -501,12 +551,14 @@
         bestItem = data.bestItem || "None";
         bestChance = data.bestChance || 101;
         inventory = data.inventory || {};
+        achievements = data.achievements || {};
       } else {
         username = "";
         rolls = 0;
         bestItem = "None";
         bestChance = 101;
         inventory = {};
+        achievements = {};
 
         await set(playerRef, {
           uid: currentUser.uid,
@@ -514,7 +566,8 @@
           rolls: 0,
           bestItem: "None",
           bestChance: 101,
-          inventory: {}
+          inventory: {},
+          achievements: {}
         });
       }
 
@@ -535,6 +588,8 @@
       document.getElementById("bestItem").textContent = bestItem;
 
       updateTowers();
+      updateIndex();
+      updateAchievements();
       updateLeaderboard();
     }
 
@@ -574,7 +629,8 @@
         rolls: rolls,
         bestItem: bestItem,
         bestChance: bestChance,
-        inventory: inventory
+        inventory: inventory,
+        achievements: achievements
       });
     }
 
@@ -673,7 +729,10 @@
         document.getElementById("bestItem").textContent = bestItem;
       }
 
+      checkAchievements(item);
       updateTowers();
+      updateIndex();
+      updateAchievements();
       await savePlayerData();
 
       isRolling = false;
@@ -754,6 +813,80 @@
       }
     }
 
+    function updateIndex() {
+      let grid = document.getElementById("indexGrid");
+      if (!grid) return;
+
+      grid.innerHTML = "";
+
+      let sortedItems = [...items].sort(function(a, b) {
+        return a.chance - b.chance;
+      });
+
+      for (let item of sortedItems) {
+        let owned = inventory[item.name];
+        let card = document.createElement("div");
+
+        if (owned) {
+          card.className = "tower " + item.rarity;
+          card.innerHTML = `
+            <img src="${item.image}">
+            <div class="tower-name">${escapeHtml(item.name)}</div>
+            <div class="chance">${formatChance(item.chance)} chance</div>
+            <div class="amount">Unlocked ✅</div>
+          `;
+        } else {
+          card.className = "tower locked";
+          card.innerHTML = `
+            <div class="question">???</div>
+            <div>${formatChance(item.chance)} chance</div>
+            <div>Locked</div>
+          `;
+        }
+
+        grid.appendChild(card);
+      }
+    }
+
+    function checkAchievements(item) {
+      if (rolls >= 1) achievements.firstRoll = true;
+      if (rolls >= 10) achievements.tenRolls = true;
+      if (rolls >= 100) achievements.hundredRolls = true;
+      if (rolls >= 1000) achievements.thousandRolls = true;
+      if (rolls >= 10000) achievements.tenThousandRolls = true;
+      if (rolls >= 100000) achievements.hundredThousandRolls = true;
+
+      if (item.rarity === "secret") achievements.firstSecret = true;
+      if (item.rarity === "cheeter") achievements.firstCheeter = true;
+      if (item.name === "Platter Bros") achievements.platterBros = true;
+      if (item.name === "epstain bros") achievements.epstainBros = true;
+      if (item.name === "DIMIS_PLAYZ") achievements.dimis = true;
+      if (item.name === "JOHN ROBLOX") achievements.johnRoblox = true;
+    }
+
+    function updateAchievements() {
+      let grid = document.getElementById("achievementGrid");
+      if (!grid) return;
+
+      grid.innerHTML = "";
+
+      for (let achievement of achievementList) {
+        let unlocked = achievements[achievement.id];
+
+        let card = document.createElement("div");
+        card.className = unlocked
+          ? "achievement unlocked"
+          : "achievement locked-achievement";
+
+        card.innerHTML = `
+          <h3>${unlocked ? "✅" : "🔒"} ${escapeHtml(achievement.name)}</h3>
+          <p>${escapeHtml(achievement.description)}</p>
+        `;
+
+        grid.appendChild(card);
+      }
+    }
+
     function updateLeaderboard() {
       let leaderboard = document.getElementById("leaderboard");
 
@@ -807,6 +940,8 @@
     function showPage(page) {
       document.getElementById("rollPage").style.display = "none";
       document.getElementById("towersPage").style.display = "none";
+      document.getElementById("indexPage").style.display = "none";
+      document.getElementById("achievementsPage").style.display = "none";
       document.getElementById("leaderboardPage").style.display = "none";
 
       document.getElementById(page + "Page").style.display = "block";
@@ -816,8 +951,13 @@
 
       if (page === "roll") buttons[0].classList.add("active");
       if (page === "towers") buttons[1].classList.add("active");
-      if (page === "leaderboard") buttons[2].classList.add("active");
+      if (page === "index") buttons[2].classList.add("active");
+      if (page === "achievements") buttons[3].classList.add("active");
+      if (page === "leaderboard") buttons[4].classList.add("active");
 
+      updateTowers();
+      updateIndex();
+      updateAchievements();
       updateLeaderboard();
     }
 
@@ -835,6 +975,8 @@
     window.showPage = showPage;
 
     updateTowers();
+    updateIndex();
+    updateAchievements();
     updateLeaderboard();
   </script>
 
