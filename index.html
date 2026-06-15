@@ -648,12 +648,13 @@
       document.getElementById("rollButton").disabled = true;
 
       let spinCount = 0;
-      let maxSpins = 20;
+      let maxSpins = 28;
+      let delay = 40;
 
       document.getElementById("resultName").classList.add("rolling");
       document.getElementById("resultImage").classList.add("rolling");
 
-      let spin = setInterval(function() {
+      function spin() {
         let randomItem = items[Math.floor(Math.random() * items.length)];
 
         document.getElementById("resultName").textContent = randomItem.name;
@@ -663,12 +664,16 @@
         spinCount++;
 
         if (spinCount >= maxSpins) {
-          clearInterval(spin);
-
           let finalItem = getRandomItem();
           finishRoll(finalItem);
+          return;
         }
-      }, 80);
+
+        delay += 12;
+        setTimeout(spin, delay);
+      }
+
+      spin();
     }
 
     async function finishRoll(item) {
