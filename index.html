@@ -543,7 +543,7 @@
         <h3>🟢 Chet Panel</h3>
         <p>Welcome to the Cheet Hut.</p>
         <p class="coin-text">Cheet Coins: <span id="hutCoinCount">0</span></p>
-        <p>Earn 1 Cheet Coin every roll. Spend coins on upgrades.</p>
+        <p>Rarer towers give more Cheet Coins. Spend coins on upgrades.</p>
       </div>
 
       <div class="shop-grid">
@@ -639,9 +639,9 @@
       { name: "Rotfzz", image: "Rotfzz.png", chance: 200, rarity: "mythic" },
       { name: "Truabgke", image: "Truabgke.png", chance: 67, rarity: "mythic" },
       { name: "Brazil0987", image: "brazil0987.png", chance: 987, rarity: "mythic" },
-      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 987, rarity: "mythic" },
       { name: "Wawacat4436", image: "wawacat.png", chance: 4436, rarity: "mythic" },
       { name: "Tom5551", image: "Tom5551.png", chance: 5551, rarity: "mythic" },
+      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 987, rarity: "mythic" },
 
       { name: "KanTDS", image: "KanTDS.png", chance: 500, rarity: "secret" },
       { name: "Craigity3", image: "Craigity3.png", chance: 500, rarity: "secret" },
@@ -680,6 +680,7 @@
     let achievements = {};
     let rolls = 0;
     let bestChance = 0;
+    let bestScore = 0;
     let bestItem = "None";
     let isRolling = false;
     let autoRollEnabled = false;
@@ -858,6 +859,7 @@
         achievements = {};
         rolls = 0;
         bestChance = 0;
+        bestScore = 0;
         bestItem = "None";
         cheetCoins = 0;
         upgrades = { luck: 0, speed: 0, secret: 0 };
@@ -906,6 +908,8 @@
         if (upgrades.luck === undefined) upgrades.luck = 0;
         if (upgrades.speed === undefined) upgrades.speed = 0;
         if (upgrades.secret === undefined) upgrades.secret = 0;
+
+        recalculateBestFromInventory();
       } else {
         await set(playerRef, {
           uid: currentUser.uid,
@@ -1006,6 +1010,84 @@
       } else {
         announcement.style.display = "none";
       }
+    }
+
+    function getRarityOrder(rarity) {
+      let rarityOrder = {
+        common: 1,
+        rare: 2,
+        epic: 3,
+        legendary: 4,
+        mythic: 5,
+        secret: 6,
+        cheeter: 7
+      };
+
+      return rarityOrder[rarity] || 0;
+    }
+
+    function getBestScore(item) {
+      return getRarityOrder(item.rarity) * 1000000000 + item.chance;
+    }
+
+    function getCoinReward(item) {
+      let rarityCoins = {
+        common: 1,
+        rare: 2,
+        epic: 4,
+        legendary: 8,
+        mythic: 15,
+        secret: 50,
+        cheeter: 500
+      };
+
+      let baseCoins = rarityCoins[item.rarity] || 1;
+      let chanceBonus = Math.floor(Math.sqrt(item.chance) / 3);
+      let reward = baseCoins + chanceBonus;
+
+      if (reward < 1) {
+        reward = 1;
+      }
+
+      if (reward > 5000) {
+        reward = 5000;
+      }
+
+      return reward;
+    }
+
+    function findItemByName(name) {
+      for (let item of items) {
+        if (item.name === name) {
+          return item;
+        }
+      }
+
+      return null;
+    }
+
+    function recalculateBestFromInventory() {
+      let bestOwnedItem = null;
+
+      for (let item of items) {
+        if (inventory[item.name]) {
+          if (!bestOwnedItem || getBestScore(item) > getBestScore(bestOwnedItem)) {
+            bestOwnedItem = item;
+          }
+        }
+      }
+
+      if (bestOwnedItem) {
+        bestItem = bestOwnedItem.name;
+        bestChance = bestOwnedItem.chance;
+        bestScore = getBestScore(bestOwnedItem);
+      } else {
+        bestItem = "None";
+        bestChance = 0;
+        bestScore = 0;
+      }
+
+      document.getElementById("bestItem").textContent = bestItem;
     }
 
     function getItemWeight(item) {
@@ -1142,14 +1224,15 @@
 
     function finishRoll(item) {
       rolls++;
-      cheetCoins++;
+      let coinReward = getCoinReward(item);
+      cheetCoins += coinReward;
 
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
 
       document.getElementById("resultName").textContent = item.name;
       showResultImage(item.image);
-      document.getElementById("resultChance").textContent = formatChance(item.chance);
+      document.getElementById("resultChance").textContent = formatChance(item.chance) + " • +" + coinReward + " coins";
 
       showRarityAnnouncement(item);
 
@@ -1167,7 +1250,8 @@
         inventory[item.name] = 1;
       }
 
-      if (item.chance > bestChance || bestItem === "None") {
+      if (getBestScore(item) > bestScore || bestItem === "None") {
+        bestScore = getBestScore(item);
         bestChance = item.chance;
         bestItem = item.name;
         document.getElementById("bestItem").textContent = bestItem;
@@ -1244,12 +1328,15 @@
 
       let bestCaughtItem = null;
       let caughtPookowski = false;
+      let totalCoinReward = 0;
 
       for (let i = 0; i < missedRolls; i++) {
         let item = getRandomItem();
+        let coinReward = getCoinReward(item);
 
         rolls++;
-        cheetCoins++;
+        cheetCoins += coinReward;
+        totalCoinReward += coinReward;
 
         if (inventory[item.name]) {
           inventory[item.name]++;
@@ -1257,12 +1344,13 @@
           inventory[item.name] = 1;
         }
 
-        if (item.chance > bestChance || bestItem === "None") {
+        if (getBestScore(item) > bestScore || bestItem === "None") {
+          bestScore = getBestScore(item);
           bestChance = item.chance;
           bestItem = item.name;
         }
 
-        if (!bestCaughtItem || item.chance > bestCaughtItem.chance) {
+        if (!bestCaughtItem || getBestScore(item) > getBestScore(bestCaughtItem)) {
           bestCaughtItem = item;
         }
 
@@ -1286,7 +1374,7 @@
       });
 
       document.getElementById("resultName").textContent = "Auto roll caught up!";
-      document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls";
+      document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls • +" + totalCoinReward + " coins";
 
       if (bestCaughtItem) {
         showResultImage(bestCaughtItem.image);
