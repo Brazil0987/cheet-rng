@@ -639,6 +639,7 @@
       { name: "Rotfzz", image: "Rotfzz.png", chance: 200, rarity: "mythic" },
       { name: "Truabgke", image: "Truabgke.png", chance: 67, rarity: "mythic" },
       { name: "Brazil0987", image: "brazil0987.png", chance: 987, rarity: "mythic" },
+      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 987, rarity: "mythic" },
       { name: "Wawacat4436", image: "wawacat.png", chance: 4436, rarity: "mythic" },
       { name: "Tom5551", image: "Tom5551.png", chance: 5551, rarity: "mythic" },
 
@@ -649,7 +650,7 @@
       { name: "DIMIS_PLAYZ", image: "DIMIS_PLAYZ.png", chance: 10000, rarity: "secret" },
       { name: "Platter Bros", image: "Platter Bros.png", chance: 10000, rarity: "secret" },
       { name: "Trix", image: "Trix.png", chance: 10000, rarity: "secret" },
-      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 100987, rarity: "secret" },
+      { name: "NorthKorea0987fake", image: "NorthKorea0987fake.png", chance: 10987, rarity: "cheeter" },
       { name: "SuperDadPete83", image: "SuperDadPete83.png", chance: 20000, rarity: "secret" },
       { name: "Purple Trapper", image: "Purple Trapper.png", chance: 20000, rarity: "secret" },
       { name: "epstain bros", image: "epstain bros.png", chance: 100000, rarity: "secret" },
@@ -665,7 +666,7 @@
       { id: "tenThousandRolls", name: "10,000 Rolls", description: "Roll 10,000 times" },
       { id: "hundredThousandRolls", name: "100,000 Rolls", description: "Roll 100,000 times" },
       { id: "firstSecret", name: "First Secret", description: "Get any Secret tower" },
-      { id: "firstCheeter", name: "First Cheeter", description: "Get Pookowski" },
+      { id: "firstCheeter", name: "First Cheeter", description: "Get any Cheeter tower" },
       { id: "platterBros", name: "Platter Bros", description: "Get Platter Bros" },
       { id: "epstainBros", name: "epstain bros", description: "Get epstain bros" },
       { id: "dimis", name: "DIMIS_PLAYZ", description: "Get DIMIS_PLAYZ" },
@@ -1008,42 +1009,74 @@
     }
 
     function getItemWeight(item) {
-      let weight = 1 / item.chance;
+      return 1 / item.chance;
+    }
 
-      if (item.rarity === "mythic") {
-        weight *= 1 + upgrades.luck * 0.04;
-      }
+    function getRarityChances() {
+      let rarityChances = {
+        common: 55,
+        rare: 20,
+        epic: 10,
+        legendary: 7,
+        mythic: 6,
+        secret: 1.99,
+        cheeter: 0.01
+      };
 
-      if (item.rarity === "secret") {
-        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
-      }
+      rarityChances.mythic *= 1 + upgrades.luck * 0.04;
+      rarityChances.secret *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
+      rarityChances.cheeter *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
 
-      if (item.rarity === "cheeter") {
-        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
-      }
-
-      return weight;
+      return rarityChances;
     }
 
     function getRandomItem() {
-      let totalWeight = 0;
+      let rarityChances = getRarityChances();
+      let totalRarityChance = 0;
 
-      for (let item of items) {
-        totalWeight += getItemWeight(item);
+      for (let rarity in rarityChances) {
+        totalRarityChance += rarityChances[rarity];
       }
 
-      let random = Math.random() * totalWeight;
-      let current = 0;
+      let rarityRoll = Math.random() * totalRarityChance;
+      let currentRarityChance = 0;
+      let chosenRarity = "common";
 
-      for (let item of items) {
-        current += getItemWeight(item);
+      for (let rarity in rarityChances) {
+        currentRarityChance += rarityChances[rarity];
 
-        if (random <= current) {
+        if (rarityRoll <= currentRarityChance) {
+          chosenRarity = rarity;
+          break;
+        }
+      }
+
+      let possibleItems = items.filter(function(item) {
+        return item.rarity === chosenRarity;
+      });
+
+      if (possibleItems.length === 0) {
+        possibleItems = items;
+      }
+
+      let totalItemWeight = 0;
+
+      for (let item of possibleItems) {
+        totalItemWeight += getItemWeight(item);
+      }
+
+      let itemRoll = Math.random() * totalItemWeight;
+      let currentItemWeight = 0;
+
+      for (let item of possibleItems) {
+        currentItemWeight += getItemWeight(item);
+
+        if (itemRoll <= currentItemWeight) {
           return item;
         }
       }
 
-      return items[0];
+      return possibleItems[0];
     }
 
     function getRollDelays() {
