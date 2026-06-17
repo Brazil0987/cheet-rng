@@ -522,12 +522,9 @@
     let bestChance = 101;
     let bestItem = "None";
     let isRolling = false;
-    let autoRollTimer = null;
-    let leaderboardData = {};
-
     let autoRollEnabled = false;
+    let leaderboardData = {};
     let lastAutoRollTime = Date.now();
-    let AUTO_ROLL_TIME = 3000;
 
     function escapeHtml(text) {
       return String(text)
@@ -824,6 +821,14 @@
       if (currentUser && hasUsername()) {
         document.getElementById("rollButton").disabled = false;
       }
+
+      if (autoRollEnabled && currentUser && hasUsername()) {
+        setTimeout(function() {
+          if (!isRolling && autoRollEnabled) {
+            rollItem();
+          }
+        }, 0);
+      }
     }
 
     function getRandomItem() {
@@ -853,26 +858,13 @@
       autoRollEnabled = true;
       lastAutoRollTime = Date.now();
 
-      if (autoRollTimer !== null) return;
-
-      autoRollTimer = setInterval(function() {
-        if (!autoRollEnabled) return;
-        if (isRolling) return;
-
-        let now = Date.now();
-        let timePassed = now - lastAutoRollTime;
-
-        if (timePassed >= AUTO_ROLL_TIME) {
-          lastAutoRollTime = now;
-          rollItem();
-        }
-      }, 250);
+      if (!isRolling) {
+        rollItem();
+      }
     }
 
     function stopAutoRoll() {
       autoRollEnabled = false;
-      clearInterval(autoRollTimer);
-      autoRollTimer = null;
     }
 
     async function catchUpAutoRolls() {
@@ -881,7 +873,9 @@
       if (!hasUsername()) return;
 
       let now = Date.now();
-      let missedRolls = Math.floor((now - lastAutoRollTime) / AUTO_ROLL_TIME);
+
+      let estimatedRollTime = 2500;
+      let missedRolls = Math.floor((now - lastAutoRollTime) / estimatedRollTime);
 
       if (missedRolls <= 0) return;
 
@@ -926,6 +920,10 @@
 
       if (bestCaughtItem) {
         showResultImage(bestCaughtItem.image);
+      }
+
+      if (autoRollEnabled && !isRolling) {
+        rollItem();
       }
     }
 
