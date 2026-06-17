@@ -294,7 +294,7 @@
 
     .cheet-hut-box {
       margin: 20px auto;
-      max-width: 700px;
+      max-width: 850px;
       padding: 25px;
       border: 3px solid #49ff5a;
       border-radius: 20px;
@@ -314,7 +314,7 @@
     .chet-panel {
       margin: 20px auto 0;
       padding: 18px;
-      max-width: 520px;
+      max-width: 650px;
       border: 2px solid #ff3030;
       border-radius: 16px;
       background: linear-gradient(135deg, #111, #1d0606);
@@ -326,6 +326,48 @@
       margin-top: 0;
       color: #49ff5a;
       text-shadow: 0 0 8px #49ff5a;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .shop-card {
+      border: 2px solid #49ff5a;
+      border-radius: 16px;
+      padding: 15px;
+      background: #101010;
+      box-shadow: 0 0 15px #49ff5a;
+    }
+
+    .shop-card h3 {
+      color: #49ff5a;
+      margin-top: 0;
+    }
+
+    .shop-card button {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: 2px solid #49ff5a;
+      background: #050505;
+      color: #49ff5a;
+      cursor: pointer;
+      box-shadow: 0 0 10px #49ff5a;
+    }
+
+    .shop-card button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .coin-text {
+      color: gold;
+      font-size: 22px;
+      text-shadow: 0 0 10px gold;
+      font-weight: bold;
     }
 
     .leaderboard {
@@ -373,6 +415,7 @@
     <div class="stats">
       <div class="stat-box">Player: <span id="currentPlayer">Not signed in</span></div>
       <div class="stat-box">Rolls: <span id="rollCount">0</span></div>
+      <div class="stat-box">Coins: <span id="coinCount">0</span></div>
       <div class="stat-box">Best: <span id="bestItem">None</span></div>
     </div>
 
@@ -435,8 +478,42 @@
       <div class="chet-panel">
         <h3>🟢 Chet Panel</h3>
         <p>Welcome to the Cheet Hut.</p>
-        <p>Chet is watching your rolls from inside the hut.</p>
-        <p class="small-note">Coming soon: luck boosts, faster rolls, secret upgrades, and Cheet Hut rewards.</p>
+        <p class="coin-text">Cheet Coins: <span id="hutCoinCount">0</span></p>
+        <p>Earn 1 Cheet Coin every roll. Spend coins on upgrades.</p>
+      </div>
+
+      <div class="shop-grid">
+        <div class="shop-card">
+          <h3>🍀 Luck Boost</h3>
+          <p>Level: <span id="luckLevel">0</span></p>
+          <p>Boosts mythic, secret, and cheeter odds a little.</p>
+          <p>Cost: <span id="luckCost">500</span> coins</p>
+          <button onclick="buyUpgrade('luck')">Buy Luck Boost</button>
+        </div>
+
+        <div class="shop-card">
+          <h3>⚡ Faster Rolls</h3>
+          <p>Level: <span id="speedLevel">0</span></p>
+          <p>Makes the roll animation faster.</p>
+          <p>Cost: <span id="speedCost">750</span> coins</p>
+          <button onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
+        </div>
+
+        <div class="shop-card">
+          <h3>🕵️ Secret Upgrade</h3>
+          <p>Level: <span id="secretLevel">0</span></p>
+          <p>Boosts secret and cheeter tower odds.</p>
+          <p>Cost: <span id="secretCost">2500</span> coins</p>
+          <button onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
+        </div>
+
+        <div class="shop-card">
+          <h3>🎁 Cheet Hut Reward</h3>
+          <p>Claim free coins every 24 hours.</p>
+          <p>Reward: 500 coins</p>
+          <button id="rewardButton" onclick="claimHutReward()">Claim Reward</button>
+          <p class="small-note" id="rewardStatus">Ready?</p>
+        </div>
       </div>
     </div>
   </div>
@@ -526,6 +603,14 @@
     let leaderboardData = {};
     let lastAutoRollTime = Date.now();
 
+    let cheetCoins = 0;
+    let upgrades = {
+      luck: 0,
+      speed: 0,
+      secret: 0
+    };
+    let lastHutReward = 0;
+
     function escapeHtml(text) {
       return String(text)
         .replaceAll("&", "&amp;")
@@ -572,6 +657,86 @@
       document.getElementById("resultChance").textContent = formatChance(item.chance) + " chance";
     }
 
+    function getUpgradeCost(type) {
+      if (type === "luck") return 500 + upgrades.luck * 500;
+      if (type === "speed") return 750 + upgrades.speed * 750;
+      if (type === "secret") return 2500 + upgrades.secret * 2500;
+      return 999999;
+    }
+
+    function updateCoinsAndShop() {
+      document.getElementById("coinCount").textContent = cheetCoins;
+      document.getElementById("hutCoinCount").textContent = cheetCoins;
+
+      document.getElementById("luckLevel").textContent = upgrades.luck;
+      document.getElementById("speedLevel").textContent = upgrades.speed;
+      document.getElementById("secretLevel").textContent = upgrades.secret;
+
+      document.getElementById("luckCost").textContent = getUpgradeCost("luck");
+      document.getElementById("speedCost").textContent = getUpgradeCost("speed");
+      document.getElementById("secretCost").textContent = getUpgradeCost("secret");
+
+      let now = Date.now();
+      let rewardCooldown = 24 * 60 * 60 * 1000;
+      let rewardButton = document.getElementById("rewardButton");
+      let rewardStatus = document.getElementById("rewardStatus");
+
+      if (now - lastHutReward >= rewardCooldown) {
+        rewardButton.disabled = false;
+        rewardStatus.textContent = "Reward ready!";
+      } else {
+        rewardButton.disabled = true;
+        let timeLeft = rewardCooldown - (now - lastHutReward);
+        let hours = Math.ceil(timeLeft / (60 * 60 * 1000));
+        rewardStatus.textContent = "Come back in about " + hours + " hour(s).";
+      }
+    }
+
+    async function buyUpgrade(type) {
+      if (!currentUser || !hasUsername()) {
+        alert("Sign in and choose a username first!");
+        return;
+      }
+
+      let cost = getUpgradeCost(type);
+
+      if (cheetCoins < cost) {
+        alert("Not enough Cheet Coins!");
+        return;
+      }
+
+      cheetCoins -= cost;
+      upgrades[type]++;
+
+      updateCoinsAndShop();
+      await savePlayerData();
+
+      alert("Upgrade bought!");
+    }
+
+    async function claimHutReward() {
+      if (!currentUser || !hasUsername()) {
+        alert("Sign in and choose a username first!");
+        return;
+      }
+
+      let now = Date.now();
+      let rewardCooldown = 24 * 60 * 60 * 1000;
+
+      if (now - lastHutReward < rewardCooldown) {
+        alert("Reward is not ready yet!");
+        return;
+      }
+
+      cheetCoins += 500;
+      lastHutReward = now;
+
+      updateCoinsAndShop();
+      await savePlayerData();
+
+      alert("You claimed 500 Cheet Coins!");
+    }
+
     async function signInWithGoogle() {
       try {
         await signInWithPopup(auth, provider);
@@ -599,6 +764,9 @@
         rolls = 0;
         bestChance = 101;
         bestItem = "None";
+        cheetCoins = 0;
+        upgrades = { luck: 0, speed: 0, secret: 0 };
+        lastHutReward = 0;
 
         stopAutoRoll();
 
@@ -609,6 +777,7 @@
 
         document.getElementById("currentPlayer").textContent = "Not signed in";
         document.getElementById("rollCount").textContent = 0;
+        document.getElementById("coinCount").textContent = 0;
         document.getElementById("bestItem").textContent = "None";
         document.getElementById("resultName").textContent = "Sign in to roll!";
         showResultImage("chet.png");
@@ -616,6 +785,7 @@
 
         updateTowers();
         updateAchievements();
+        updateCoinsAndShop();
         updateLeaderboard();
       }
     });
@@ -634,6 +804,13 @@
         bestChance = data.bestChance || 101;
         inventory = data.inventory || {};
         achievements = data.achievements || {};
+        cheetCoins = data.cheetCoins || 0;
+        upgrades = data.upgrades || { luck: 0, speed: 0, secret: 0 };
+        lastHutReward = data.lastHutReward || 0;
+
+        if (upgrades.luck === undefined) upgrades.luck = 0;
+        if (upgrades.speed === undefined) upgrades.speed = 0;
+        if (upgrades.secret === undefined) upgrades.secret = 0;
       } else {
         username = "";
         rolls = 0;
@@ -641,6 +818,9 @@
         bestChance = 101;
         inventory = {};
         achievements = {};
+        cheetCoins = 0;
+        upgrades = { luck: 0, speed: 0, secret: 0 };
+        lastHutReward = 0;
 
         await set(playerRef, {
           uid: currentUser.uid,
@@ -649,7 +829,10 @@
           bestItem: "None",
           bestChance: 101,
           inventory: {},
-          achievements: {}
+          achievements: {},
+          cheetCoins: 0,
+          upgrades: upgrades,
+          lastHutReward: 0
         });
       }
 
@@ -672,6 +855,7 @@
 
       updateTowers();
       updateAchievements();
+      updateCoinsAndShop();
       updateLeaderboard();
     }
 
@@ -712,7 +896,10 @@
         bestItem: bestItem,
         bestChance: bestChance,
         inventory: inventory,
-        achievements: achievements
+        achievements: achievements,
+        cheetCoins: cheetCoins,
+        upgrades: upgrades,
+        lastHutReward: lastHutReward
       });
     }
 
@@ -736,6 +923,60 @@
       }
     }
 
+    function getBoostedWeight(item) {
+      let weight = item.chance;
+
+      if (item.rarity === "mythic") {
+        weight *= 1 + upgrades.luck * 0.04;
+      }
+
+      if (item.rarity === "secret") {
+        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
+      }
+
+      if (item.rarity === "cheeter") {
+        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
+      }
+
+      return weight;
+    }
+
+    function getRandomItem() {
+      let totalWeight = 0;
+
+      for (let item of items) {
+        totalWeight += getBoostedWeight(item);
+      }
+
+      let random = Math.random() * totalWeight;
+      let runningTotal = 0;
+
+      for (let item of items) {
+        runningTotal += getBoostedWeight(item);
+        if (random <= runningTotal) return item;
+      }
+
+      return items[0];
+    }
+
+    function getRollDelays() {
+      let delays = [
+        35, 35, 40, 40, 45, 45, 50, 55, 60, 65,
+        70, 80, 90, 105, 120, 140, 160, 185, 210,
+        240, 275, 315, 360, 410, 470, 540, 620
+      ];
+
+      let speedMultiplier = 1 - upgrades.speed * 0.06;
+
+      if (speedMultiplier < 0.55) {
+        speedMultiplier = 0.55;
+      }
+
+      return delays.map(function(delay) {
+        return Math.max(20, Math.floor(delay * speedMultiplier));
+      });
+    }
+
     function rollItem() {
       if (!currentUser) {
         alert("Sign in first!");
@@ -754,12 +995,7 @@
       document.getElementById("rollButton").disabled = true;
 
       let spinCount = 0;
-
-      let delays = [
-        25, 25, 25, 30, 30, 35, 35, 40, 40, 45,
-        50, 55, 60, 70, 80, 95, 110, 130, 155,
-        185, 220, 260, 310, 385
-      ];
+      let delays = getRollDelays();
 
       document.getElementById("resultName").classList.add("rolling");
       document.getElementById("resultImage").classList.add("rolling");
@@ -784,9 +1020,12 @@
       spin();
     }
 
-    async function finishRoll(item) {
+    function finishRoll(item) {
       rolls++;
+      cheetCoins++;
+
       document.getElementById("rollCount").textContent = rolls;
+      document.getElementById("coinCount").textContent = cheetCoins;
 
       document.getElementById("resultName").textContent = item.name;
       showResultImage(item.image);
@@ -813,7 +1052,11 @@
       checkAchievements(item);
       updateTowers();
       updateAchievements();
-      await savePlayerData();
+      updateCoinsAndShop();
+
+      savePlayerData().catch(function(error) {
+        console.log("Save failed:", error);
+      });
 
       lastAutoRollTime = Date.now();
       isRolling = false;
@@ -827,20 +1070,8 @@
           if (!isRolling && autoRollEnabled) {
             rollItem();
           }
-        }, 0);
+        }, 50);
       }
-    }
-
-    function getRandomItem() {
-      let random = Math.random() * 100;
-      let total = 0;
-
-      for (let item of items) {
-        total += item.chance;
-        if (random <= total) return item;
-      }
-
-      return items[0];
     }
 
     function startAutoRoll() {
@@ -873,8 +1104,12 @@
       if (!hasUsername()) return;
 
       let now = Date.now();
+      let estimatedRollTime = 4000 - upgrades.speed * 200;
 
-      let estimatedRollTime = 2500;
+      if (estimatedRollTime < 2200) {
+        estimatedRollTime = 2200;
+      }
+
       let missedRolls = Math.floor((now - lastAutoRollTime) / estimatedRollTime);
 
       if (missedRolls <= 0) return;
@@ -889,6 +1124,7 @@
         let item = getRandomItem();
 
         rolls++;
+        cheetCoins++;
 
         if (inventory[item.name]) {
           inventory[item.name]++;
@@ -909,18 +1145,27 @@
       }
 
       document.getElementById("rollCount").textContent = rolls;
+      document.getElementById("coinCount").textContent = cheetCoins;
       document.getElementById("bestItem").textContent = bestItem;
 
       updateTowers();
       updateAchievements();
-      await savePlayerData();
+      updateCoinsAndShop();
+
+      savePlayerData().catch(function(error) {
+        console.log("Save failed:", error);
+      });
 
       document.getElementById("resultName").textContent = "Auto roll caught up!";
       document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls";
 
+      if (bestCaughtItem) {
+        showResultImage(bestCaughtItem.image);
+      }
+
       if (bestCaughtItem && bestCaughtItem.chance <= 0.1) {
-  showRarityAnnouncement(bestCaughtItem);
-}
+        showRarityAnnouncement(bestCaughtItem);
+      }
 
       if (autoRollEnabled && !isRolling) {
         rollItem();
@@ -1083,6 +1328,7 @@
 
       updateTowers();
       updateAchievements();
+      updateCoinsAndShop();
       updateLeaderboard();
     }
 
@@ -1098,9 +1344,12 @@
     window.startAutoRoll = startAutoRoll;
     window.stopAutoRoll = stopAutoRoll;
     window.showPage = showPage;
+    window.buyUpgrade = buyUpgrade;
+    window.claimHutReward = claimHutReward;
 
     updateTowers();
     updateAchievements();
+    updateCoinsAndShop();
     updateLeaderboard();
   </script>
 
