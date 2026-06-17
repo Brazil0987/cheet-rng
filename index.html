@@ -1282,9 +1282,25 @@
       let grid = document.getElementById("towerGrid");
       grid.innerHTML = "";
 
-      let sortedItems = [...items].sort(function(a, b) {
-        return b.chance - a.chance;
-      });
+      let rarityOrder = {
+  cheeter: 7,
+  secret: 6,
+  mythic: 5,
+  legendary: 4,
+  epic: 3,
+  rare: 2,
+  common: 1
+};
+
+let sortedItems = [...items].sort(function(a, b) {
+  let rarityDifference = rarityOrder[b.rarity] - rarityOrder[a.rarity];
+
+  if (rarityDifference !== 0) {
+    return rarityDifference;
+  }
+
+  return b.chance - a.chance;
+});
 
       for (let item of sortedItems) {
         let tower = document.createElement("div");
