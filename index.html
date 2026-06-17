@@ -637,30 +637,29 @@
     <div class="rarity-info-box">
       <h2>How Rarities Work</h2>
       <div class="rarity-steps">
-        <p><b>Step 1:</b> The game rolls a rarity tier first.</p>
-        <p><b>Step 2:</b> After the tier is chosen, the game rolls for a tower inside that tier.</p>
-        <p><b>Step 3:</b> Inside the same tier, bigger <b>1 in X</b> numbers are rarer.</p>
-        <p><b>Example:</b> A Secret tower can be rarer than a Mythic tower because Secret tier is harder to hit first.</p>
+        <p><b>The game does not roll rarity first anymore.</b></p>
+        <p>Every tower is in one big weighted roll pool.</p>
+        <p>The game uses <b>weight = 1 / chance</b>. A tower marked <b>1 in 500</b> has more weight than a tower marked <b>1 in 5000</b>, so the 1 in 500 tower is about <b>10x easier</b> to get.</p>
+        <p><b>Bigger 1 in X number = rarer tower.</b></p>
+        <p>Rarity names are now based on the tower's own rarity number. The rarer the tower, the higher its rarity tier.</p>
       </div>
 
       <div class="rarity-info-grid">
-        <div class="rarity-info-card common"><strong>Common</strong><br>55%<br>About 1 in 2</div>
-        <div class="rarity-info-card rare"><strong>Rare</strong><br>20%<br>About 1 in 5</div>
-        <div class="rarity-info-card epic"><strong>Epic</strong><br>10%<br>About 1 in 10</div>
-        <div class="rarity-info-card legendary"><strong>Legendary</strong><br>7%<br>About 1 in 14</div>
-        <div class="rarity-info-card mythic"><strong>Mythic</strong><br>6%<br>About 1 in 17</div>
-        <div class="rarity-info-card secret"><strong>Secret</strong><br>1.99%<br>About 1 in 50</div>
-        <div class="rarity-info-card cheeter"><strong>Cheeter</strong><br>0.00001%<br>About 1 in 10,000,000</div>
+        <div class="rarity-info-card common"><strong>Common</strong><br>1 in 1 to 1 in 4</div>
+        <div class="rarity-info-card rare"><strong>Rare</strong><br>1 in 5 to 1 in 99</div>
+        <div class="rarity-info-card epic"><strong>Epic</strong><br>1 in 100 to 1 in 199</div>
+        <div class="rarity-info-card legendary"><strong>Legendary</strong><br>1 in 200 to 1 in 499</div>
+        <div class="rarity-info-card mythic"><strong>Mythic</strong><br>1 in 500 to 1 in 9,999</div>
+        <div class="rarity-info-card secret"><strong>Secret</strong><br>1 in 10,000 to 1 in 9,999,999</div>
+        <div class="rarity-info-card cheeter"><strong>Cheeter</strong><br>1 in 10,000,000+</div>
       </div>
 
       <div class="rarity-steps">
         <h3>Extra Notes</h3>
         <p><b>Hidden towers stay secret:</b> This page explains the rarity system, but it does not reveal special hidden tower names.</p>
-        <p><b>Cheeter tier:</b> Cheeter is the hardest tier to hit. If a Cheeter tower is <b>1 in 1</b> inside Cheeter, then its total rarity is basically the Cheeter tier chance before boosts.</p>
-        <p><b>Secret tier:</b> Secret towers must hit Secret first, then win against the other Secret towers.</p>
-        <p><b>Same tier example:</b> If two towers are in the same rarity tier, their <b>1 in X</b> numbers still matter. A <b>1 in 5000</b> tower is much rarer than a <b>1 in 500</b> tower in that same tier.</p>
-        <p><b>Weight example:</b> The game uses <b>weight = 1 / chance</b> inside a tier. So <b>1 in 500</b> has weight <b>0.002</b>, while <b>1 in 5000</b> has weight <b>0.0002</b>. That makes the 1 in 500 tower about <b>10x more likely</b> than the 1 in 5000 tower inside that tier.</p>
-        <p><b>Simple rule:</b> Different tiers = rarity tier matters first. Same tier = bigger <b>1 in X</b> number is rarer.</p>
+        <p><b>Same rarity example:</b> If two towers are both Mythic, the one with the bigger <b>1 in X</b> number is rarer.</p>
+        <p><b>Boosts:</b> Luck boosts Mythic, Secret, and Cheeter tower weights. Secret Upgrade boosts Secret and Cheeter tower weights.</p>
+        <p><b>Simple rule:</b> All towers roll together. The tower's <b>1 in X</b> number decides how rare it is, and that number also decides its rarity label.</p>
       </div>
     </div>
   </div>
@@ -739,7 +738,7 @@
       { name: "Purple Trapper", image: "Purple Trapper.png", chance: 20000, rarity: "secret" },
       { name: "epstain bros", image: "epstain bros.png", chance: 100000, rarity: "secret" },
 
-      { name: "Pookowski", image: "chet.png", chance: 1, rarity: "cheeter" }
+      { name: "Pookowski", image: "chet.png", chance: 10000000, rarity: "cheeter" }
     ];
 
     const achievementList = [
@@ -1096,6 +1095,20 @@
       }
     }
 
+    function getAutoRarity(chance) {
+      if (chance >= 10000000) return "cheeter";
+      if (chance >= 10000) return "secret";
+      if (chance >= 500) return "mythic";
+      if (chance >= 200) return "legendary";
+      if (chance >= 100) return "epic";
+      if (chance >= 5) return "rare";
+      return "common";
+    }
+
+    for (let item of items) {
+      item.rarity = getAutoRarity(item.chance);
+    }
+
     function getRarityOrder(rarity) {
       let rarityOrder = {
         common: 1,
@@ -1179,74 +1192,42 @@
     }
 
     function getItemWeight(item) {
-      return 1 / item.chance;
-    }
+      let weight = 1 / item.chance;
 
-    function getRarityChances() {
-      let rarityChances = {
-        common: 55,
-        rare: 20,
-        epic: 10,
-        legendary: 7,
-        mythic: 6,
-        secret: 1.99,
-        cheeter: 0.00001
-      };
+      if (item.rarity === "mythic") {
+        weight *= 1 + upgrades.luck * 0.04;
+      }
 
-      rarityChances.mythic *= 1 + upgrades.luck * 0.04;
-      rarityChances.secret *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
-      rarityChances.cheeter *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
+      if (item.rarity === "secret") {
+        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
+      }
 
-      return rarityChances;
+      if (item.rarity === "cheeter") {
+        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
+      }
+
+      return weight;
     }
 
     function getRandomItem() {
-      let rarityChances = getRarityChances();
-      let totalRarityChance = 0;
+      let totalWeight = 0;
 
-      for (let rarity in rarityChances) {
-        totalRarityChance += rarityChances[rarity];
+      for (let item of items) {
+        totalWeight += getItemWeight(item);
       }
 
-      let rarityRoll = Math.random() * totalRarityChance;
-      let currentRarityChance = 0;
-      let chosenRarity = "common";
+      let random = Math.random() * totalWeight;
+      let current = 0;
 
-      for (let rarity in rarityChances) {
-        currentRarityChance += rarityChances[rarity];
+      for (let item of items) {
+        current += getItemWeight(item);
 
-        if (rarityRoll <= currentRarityChance) {
-          chosenRarity = rarity;
-          break;
-        }
-      }
-
-      let possibleItems = items.filter(function(item) {
-        return item.rarity === chosenRarity;
-      });
-
-      if (possibleItems.length === 0) {
-        possibleItems = items;
-      }
-
-      let totalItemWeight = 0;
-
-      for (let item of possibleItems) {
-        totalItemWeight += getItemWeight(item);
-      }
-
-      let itemRoll = Math.random() * totalItemWeight;
-      let currentItemWeight = 0;
-
-      for (let item of possibleItems) {
-        currentItemWeight += getItemWeight(item);
-
-        if (itemRoll <= currentItemWeight) {
+        if (random <= current) {
           return item;
         }
       }
 
-      return possibleItems[0];
+      return items[0];
     }
 
     function getRollDelays() {
