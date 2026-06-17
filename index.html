@@ -573,6 +573,7 @@
 
   <div id="towersPage" style="display:none;">
     <h2>Your Towers</h2>
+    <div class="small-note">Locked towers still show their rarity tier, but the tower name stays hidden until you unlock it.</div>
     <div class="tower-grid" id="towerGrid"></div>
   </div>
 
@@ -653,9 +654,10 @@
       </div>
 
       <div class="rarity-steps">
-        <h3>Current special towers</h3>
-        <p><b>Pookowski</b> is the only Cheeter tower and is <b>1 in 1</b> inside Cheeter tier, so Pookowski is about <b>1 in 10,000,000</b> total rolls before boosts.</p>
-        <p><b>NorthKorea0987fake</b> is now Secret tier, so it must hit Secret first, then win inside the Secret tier.</p>
+        <h3>Extra Notes</h3>
+        <p><b>Hidden towers stay secret:</b> This page explains the rarity system, but it does not reveal special hidden tower names.</p>
+        <p><b>Cheeter tier:</b> Cheeter is the hardest tier to hit. If a Cheeter tower is <b>1 in 1</b> inside Cheeter, then its total rarity is basically the Cheeter tier chance before boosts.</p>
+        <p><b>Secret tier:</b> Secret towers must hit Secret first, then win against the other Secret towers.</p>
       </div>
     </div>
   </div>
@@ -1524,6 +1526,7 @@ let sortedItems = [...items].sort(function(a, b) {
           tower.innerHTML = `
             <div class="question">???</div>
             <div class="chance">${formatChance(item.chance)}</div>
+            <div class="amount">Rarity: ${escapeHtml(item.rarity.toUpperCase())}</div>
             <div>Locked Tower</div>
           `;
         }
