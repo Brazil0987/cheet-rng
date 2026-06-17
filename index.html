@@ -358,11 +358,6 @@
       box-shadow: 0 0 10px #49ff5a;
     }
 
-    .shop-card button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
     .coin-text {
       color: gold;
       font-size: 22px;
@@ -443,20 +438,18 @@
   </div>
 
   <div id="rollPage">
-    <div class="roll-area">
-      <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
-      <button class="auto-button" onclick="startAutoRoll()">AUTO ROLL</button>
-      <button class="stop-button" onclick="stopAutoRoll()">STOP</button>
+    <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
+    <button class="auto-button" onclick="startAutoRoll()">AUTO ROLL</button>
+    <button class="stop-button" onclick="stopAutoRoll()">STOP</button>
 
-      <div class="result-box">
-        <div id="resultName">Sign in to roll!</div>
-        <img id="resultImage" src="chet.png">
-        <div id="questionMarkImage">?</div>
-        <div id="resultChance"></div>
-      </div>
-
-      <div id="rarityAnnouncement" class="rarity-announcement"></div>
+    <div class="result-box">
+      <div id="resultName">Sign in to roll!</div>
+      <img id="resultImage" src="chet.png">
+      <div id="questionMarkImage">?</div>
+      <div id="resultChance"></div>
     </div>
+
+    <div id="rarityAnnouncement" class="rarity-announcement"></div>
   </div>
 
   <div id="towersPage" style="display:none;">
@@ -547,7 +540,7 @@
       { name: "Brawler", image: "Brawler.png", chance: 0.5, rarity: "mythic" },
       { name: "Freezer", image: "Freezer.png", chance: 15, rarity: "rare" },
       { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
-      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 26.66319, rarity: "common" },
+      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 25.15319, rarity: "common" },
       { name: "Accelerator", image: "accelerator.png", chance: 4, rarity: "legendary" },
       { name: "5ouls", image: "5ouls.png", chance: 5, rarity: "legendary" },
       { name: "Brazil0987", image: "brazil0987.png", chance: 0.987, rarity: "mythic" },
@@ -573,7 +566,10 @@
       { name: "Tom5551", image: "Tom5551.png", chance: 0.5551, rarity: "mythic" },
       { name: "Eggrypted", image: "Eggrypted.png", chance: 5, rarity: "legendary" },
       { name: "Platter Bros", image: "Platter Bros.png", chance: 0.01, rarity: "secret" },
-      { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" }
+      { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" },
+      { name: "Wuatt", image: "Wuatt.png", chance: 1, rarity: "mythic" },
+      { name: "Trix", image: "Trix.png", chance: 0.01, rarity: "secret" },
+      { name: "Rotfzz", image: "Rotfzz.png", chance: 0.5, rarity: "mythic" }
     ];
 
     const achievementList = [
@@ -588,7 +584,8 @@
       { id: "platterBros", name: "Platter Bros", description: "Get Platter Bros" },
       { id: "epstainBros", name: "epstain bros", description: "Get epstain bros" },
       { id: "dimis", name: "DIMIS_PLAYZ", description: "Get DIMIS_PLAYZ" },
-      { id: "johnRoblox", name: "JOHN ROBLOX", description: "Get JOHN ROBLOX" }
+      { id: "johnRoblox", name: "JOHN ROBLOX", description: "Get JOHN ROBLOX" },
+      { id: "trix", name: "Trix", description: "Get Trix" }
     ];
 
     let currentUser = null;
@@ -1227,6 +1224,7 @@
       if (item.name === "epstain bros") achievements.epstainBros = true;
       if (item.name === "DIMIS_PLAYZ") achievements.dimis = true;
       if (item.name === "JOHN ROBLOX") achievements.johnRoblox = true;
+      if (item.name === "Trix") achievements.trix = true;
     }
 
     function updateAchievements() {
