@@ -322,12 +322,6 @@
       color: #49ff5a;
     }
 
-    .chet-panel h3 {
-      margin-top: 0;
-      color: #49ff5a;
-      text-shadow: 0 0 8px #49ff5a;
-    }
-
     .shop-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
@@ -401,10 +395,122 @@
       color: #aaa;
       font-size: 14px;
     }
+
+    #pookowskiOverlay {
+      display: none;
+      position: fixed;
+      z-index: 999999;
+      inset: 0;
+      background: radial-gradient(circle, #ffffff 0%, #00ff66 20%, #260000 55%, #000000 100%);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      overflow: hidden;
+      animation: pookowskiBgFlash 0.35s infinite alternate;
+    }
+
+    #pookowskiOverlay.show {
+      display: flex;
+    }
+
+    .pookowski-title {
+      font-size: 62px;
+      font-weight: 900;
+      color: white;
+      text-shadow: 0 0 20px #00ff66, 0 0 35px red, 0 0 55px white;
+      animation: pookowskiText 1s infinite;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+    }
+
+    .pookowski-image {
+      width: 82vw;
+      max-width: 850px;
+      max-height: 70vh;
+      object-fit: contain;
+      border: 8px solid white;
+      box-shadow: 0 0 35px #00ff66, 0 0 65px red, 0 0 100px white;
+      animation: pookowskiZoom 3.2s ease-in-out forwards, pookowskiShake 0.08s infinite;
+      background: white;
+    }
+
+    .pookowski-subtitle {
+      font-size: 34px;
+      color: #ffffff;
+      margin-top: 20px;
+      font-weight: bold;
+      text-shadow: 0 0 15px #00ff66, 0 0 30px red;
+      animation: pookowskiText 0.8s infinite;
+    }
+
+    .pookowski-close {
+      margin-top: 25px;
+      padding: 14px 28px;
+      font-size: 20px;
+      border-radius: 14px;
+      border: 3px solid white;
+      background: black;
+      color: #00ff66;
+      cursor: pointer;
+      box-shadow: 0 0 20px #00ff66;
+      display: none;
+    }
+
+    #pookowskiOverlay.ready .pookowski-close {
+      display: inline-block;
+    }
+
+    @keyframes pookowskiBgFlash {
+      from {
+        filter: brightness(1);
+      }
+      to {
+        filter: brightness(1.45);
+      }
+    }
+
+    @keyframes pookowskiZoom {
+      0% {
+        transform: scale(0.15) rotate(-8deg);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.05) rotate(4deg);
+      }
+      75% {
+        transform: scale(0.96) rotate(-2deg);
+      }
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pookowskiShake {
+      0% { margin-left: -3px; margin-top: 2px; }
+      50% { margin-left: 3px; margin-top: -2px; }
+      100% { margin-left: -2px; margin-top: 1px; }
+    }
+
+    @keyframes pookowskiText {
+      0% { transform: scale(1); color: white; }
+      50% { transform: scale(1.08); color: #00ff66; }
+      100% { transform: scale(1); color: white; }
+    }
   </style>
 </head>
 
 <body>
+
+  <div id="pookowskiOverlay">
+    <div class="pookowski-title">🚨 CHEETER TIER 🚨</div>
+    <img class="pookowski-image" src="pookowski-animation.png">
+    <div class="pookowski-subtitle">POOKOWSKI HAS ARRIVED</div>
+    <button class="pookowski-close" onclick="closePookowskiAnimation()">Continue</button>
+  </div>
 
   <header>
     <div class="stats">
@@ -537,39 +643,53 @@
     const provider = new GoogleAuthProvider();
 
     const items = [
-      { name: "Brawler", image: "Brawler.png", chance: 0.5, rarity: "mythic" },
-      { name: "Freezer", image: "Freezer.png", chance: 15, rarity: "rare" },
-      { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
+      { name: "GalaxyTDS For President", image: "GalaxyTDS For President.png", chance: 80, rarity: "common" },
+      { name: "Jester", image: "Jester.png", chance: 30, rarity: "common" },
       { name: "Gataling Goon", image: "Gataling Goon.png", chance: 25.15319, rarity: "common" },
-      { name: "Accelerator", image: "accelerator.png", chance: 4, rarity: "legendary" },
+
+      { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 20, rarity: "rare" },
+      { name: "Void Reaver", image: "Void Reaver.png", chance: 20, rarity: "rare" },
+      { name: "Freezer", image: "Freezer.png", chance: 15, rarity: "rare" },
+      { name: "hitmanthefirst", image: "hitmanthefirst.png", chance: 10, rarity: "rare" },
+      { name: "SpikeH", image: "SpikeH.png", chance: 10, rarity: "rare" },
+      { name: "Commander", image: "Commander.png", chance: 10, rarity: "rare" },
+
+      { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
+
+      { name: "Mercenary Base", image: "Mercenary Base.png", chance: 7, rarity: "legendary" },
       { name: "5ouls", image: "5ouls.png", chance: 5, rarity: "legendary" },
-      { name: "Brazil0987", image: "brazil0987.png", chance: 0.987, rarity: "mythic" },
-      { name: "Wawacat4436", image: "wawacat.png", chance: 0.4436, rarity: "mythic" },
+      { name: "CORSO", image: "CORSO.png", chance: 5, rarity: "legendary" },
+      { name: "Eggrypted", image: "Eggrypted.png", chance: 5, rarity: "legendary" },
+      { name: "Accelerator", image: "accelerator.png", chance: 4, rarity: "legendary" },
+
+      { name: "Engineer", image: "engineer.png", chance: 2, rarity: "mythic" },
       { name: "Rezhexx", image: "Rezhexx.png", chance: 1, rarity: "mythic" },
       { name: "DankTDS", image: "DankTDS.png", chance: 1, rarity: "mythic" },
-      { name: "Engineer", image: "engineer.png", chance: 2, rarity: "mythic" },
-      { name: "DIMIS_PLAYZ", image: "DIMIS_PLAYZ.png", chance: 0.01, rarity: "secret" },
-      { name: "Artur Silva", image: "Artur Silva.png", chance: 0.05, rarity: "secret" },
+      { name: "Wuatt", image: "Wuatt.png", chance: 1, rarity: "mythic" },
+      { name: "BustedBot", image: "BustedBot.png", chance: 1, rarity: "mythic" },
+      { name: "Brazil0987", image: "brazil0987.png", chance: 0.987, rarity: "mythic" },
+      { name: "Truabgke", image: "Truabgke.png", chance: 0.67, rarity: "mythic" },
+      { name: "Tom5551", image: "Tom5551.png", chance: 0.5551, rarity: "mythic" },
+      { name: "Wawacat4436", image: "wawacat.png", chance: 0.4436, rarity: "mythic" },
+      { name: "Brawler", image: "Brawler.png", chance: 0.5, rarity: "mythic" },
       { name: "OhhStrike", image: "OhhStrike.png", chance: 0.5, rarity: "mythic" },
-      { name: "epstain bros", image: "epstain bros.png", chance: 0.001, rarity: "secret" },
-      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 0.0001, rarity: "secret" },
       { name: "Kero", image: "Kero.png", chance: 0.5, rarity: "mythic" },
       { name: "ProfessionalNoLifer", image: "ProfessionalNoLifer.png", chance: 0.5, rarity: "mythic" },
+      { name: "Rotfzz", image: "Rotfzz.png", chance: 0.5, rarity: "mythic" },
+
       { name: "KanTDS", image: "KanTDS.png", chance: 0.2, rarity: "secret" },
-      { name: "SuperDadPete83", image: "SuperDadPete83.png", chance: 0.005, rarity: "secret" },
-      { name: "Truabgke", image: "Truabgke.png", chance: 0.67, rarity: "mythic" },
       { name: "Craigity3", image: "Craigity3.png", chance: 0.2, rarity: "secret" },
       { name: "CheeseV", image: "CheeseV.png", chance: 0.2, rarity: "secret" },
-      { name: "Purple Trapper", image: "Purple Trapper.png", chance: 0.005, rarity: "secret" },
-      { name: "CORSO", image: "CORSO.png", chance: 5, rarity: "legendary" },
-      { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 20, rarity: "rare" },
-      { name: "Tom5551", image: "Tom5551.png", chance: 0.5551, rarity: "mythic" },
-      { name: "Eggrypted", image: "Eggrypted.png", chance: 5, rarity: "legendary" },
+      { name: "Artur Silva", image: "Artur Silva.png", chance: 0.05, rarity: "secret" },
+      { name: "DIMIS_PLAYZ", image: "DIMIS_PLAYZ.png", chance: 0.01, rarity: "secret" },
       { name: "Platter Bros", image: "Platter Bros.png", chance: 0.01, rarity: "secret" },
-      { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" },
-      { name: "Wuatt", image: "Wuatt.png", chance: 1, rarity: "mythic" },
       { name: "Trix", image: "Trix.png", chance: 0.01, rarity: "secret" },
-      { name: "Rotfzz", image: "Rotfzz.png", chance: 0.5, rarity: "mythic" }
+      { name: "SuperDadPete83", image: "SuperDadPete83.png", chance: 0.005, rarity: "secret" },
+      { name: "Purple Trapper", image: "Purple Trapper.png", chance: 0.005, rarity: "secret" },
+      { name: "epstain bros", image: "epstain bros.png", chance: 0.001, rarity: "secret" },
+      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 0.0001, rarity: "secret" },
+
+      { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" }
     ];
 
     const achievementList = [
@@ -652,6 +772,21 @@
       }
 
       document.getElementById("resultChance").textContent = formatChance(item.chance) + " chance";
+    }
+
+    function showPookowskiAnimation() {
+      let overlay = document.getElementById("pookowskiOverlay");
+      overlay.classList.add("show");
+      overlay.classList.remove("ready");
+
+      setTimeout(function() {
+        overlay.classList.add("ready");
+      }, 3300);
+    }
+
+    function closePookowskiAnimation() {
+      document.getElementById("pookowskiOverlay").classList.remove("show");
+      document.getElementById("pookowskiOverlay").classList.remove("ready");
     }
 
     function getUpgradeCost(type) {
@@ -920,40 +1055,82 @@
       }
     }
 
-    function getBoostedWeight(item) {
-      let weight = item.chance;
-
-      if (item.rarity === "mythic") {
-        weight *= 1 + upgrades.luck * 0.04;
-      }
-
-      if (item.rarity === "secret") {
-        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
-      }
-
-      if (item.rarity === "cheeter") {
-        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
-      }
-
-      return weight;
-    }
-
     function getRandomItem() {
+      let rarityChances = [
+        { rarity: "common", chance: 55 },
+        { rarity: "rare", chance: 20 },
+        { rarity: "epic", chance: 10 },
+        { rarity: "legendary", chance: 7 },
+        { rarity: "mythic", chance: 6 },
+        { rarity: "secret", chance: 1.99 },
+        { rarity: "cheeter", chance: 0.01 }
+      ];
+
+      let luckBoost = upgrades.luck * 0.04;
+      let secretBoost = upgrades.secret * 0.12;
+      let cheeterBoost = upgrades.secret * 0.15;
+
+      for (let pool of rarityChances) {
+        if (pool.rarity === "mythic") {
+          pool.chance *= 1 + luckBoost;
+        }
+
+        if (pool.rarity === "secret") {
+          pool.chance *= 1 + luckBoost + secretBoost;
+        }
+
+        if (pool.rarity === "cheeter") {
+          pool.chance *= 1 + luckBoost + cheeterBoost;
+        }
+      }
+
+      let totalChance = 0;
+
+      for (let pool of rarityChances) {
+        totalChance += pool.chance;
+      }
+
+      let random = Math.random() * totalChance;
+      let current = 0;
+      let chosenRarity = "common";
+
+      for (let pool of rarityChances) {
+        current += pool.chance;
+
+        if (random <= current) {
+          chosenRarity = pool.rarity;
+          break;
+        }
+      }
+
+      let possibleItems = items.filter(function(item) {
+        return item.rarity === chosenRarity;
+      });
+
+      if (possibleItems.length === 0) {
+        possibleItems = items.filter(function(item) {
+          return item.rarity === "common";
+        });
+      }
+
       let totalWeight = 0;
 
-      for (let item of items) {
-        totalWeight += getBoostedWeight(item);
+      for (let item of possibleItems) {
+        totalWeight += item.chance;
       }
 
-      let random = Math.random() * totalWeight;
-      let runningTotal = 0;
+      let itemRandom = Math.random() * totalWeight;
+      let itemCurrent = 0;
 
-      for (let item of items) {
-        runningTotal += getBoostedWeight(item);
-        if (random <= runningTotal) return item;
+      for (let item of possibleItems) {
+        itemCurrent += item.chance;
+
+        if (itemRandom <= itemCurrent) {
+          return item;
+        }
       }
 
-      return items[0];
+      return possibleItems[0];
     }
 
     function getRollDelays() {
@@ -1026,9 +1203,13 @@
 
       document.getElementById("resultName").textContent = item.name;
       showResultImage(item.image);
-      document.getElementById("resultChance").textContent = formatChance(item.chance) + " chance";
+      document.getElementById("resultChance").textContent = formatChance(item.chance) + " weight";
 
       showRarityAnnouncement(item);
+
+      if (item.name === "Pookowski") {
+        showPookowskiAnimation();
+      }
 
       document.getElementById("resultName").classList.remove("rolling");
       document.getElementById("resultImage").classList.remove("rolling");
@@ -1040,7 +1221,7 @@
         inventory[item.name] = 1;
       }
 
-      if (item.chance < bestChance) {
+      if (item.chance < bestChance || bestItem === "None") {
         bestChance = item.chance;
         bestItem = item.name;
         document.getElementById("bestItem").textContent = bestItem;
@@ -1116,6 +1297,7 @@
       lastAutoRollTime = now;
 
       let bestCaughtItem = null;
+      let caughtPookowski = false;
 
       for (let i = 0; i < missedRolls; i++) {
         let item = getRandomItem();
@@ -1129,13 +1311,17 @@
           inventory[item.name] = 1;
         }
 
-        if (item.chance < bestChance) {
+        if (item.chance < bestChance || bestItem === "None") {
           bestChance = item.chance;
           bestItem = item.name;
         }
 
         if (!bestCaughtItem || item.chance < bestCaughtItem.chance) {
           bestCaughtItem = item;
+        }
+
+        if (item.name === "Pookowski") {
+          caughtPookowski = true;
         }
 
         checkAchievements(item);
@@ -1162,6 +1348,10 @@
 
       if (bestCaughtItem && bestCaughtItem.chance <= 0.1) {
         showRarityAnnouncement(bestCaughtItem);
+      }
+
+      if (caughtPookowski) {
+        showPookowskiAnimation();
       }
 
       if (autoRollEnabled && !isRolling) {
@@ -1192,7 +1382,7 @@
           tower.innerHTML = `
             <img src="${item.image}">
             <div class="tower-name">${escapeHtml(item.name)}</div>
-            <div class="chance">${formatChance(item.chance)} chance</div>
+            <div class="chance">${formatChance(item.chance)} weight</div>
             <div class="amount">Owned: ${inventory[item.name]}</div>
             <div class="amount">Rarity: ${escapeHtml(item.rarity.toUpperCase())}</div>
           `;
@@ -1201,7 +1391,7 @@
 
           tower.innerHTML = `
             <div class="question">???</div>
-            <div class="chance">${formatChance(item.chance)} chance</div>
+            <div class="chance">${formatChance(item.chance)} weight</div>
             <div>Locked Tower</div>
           `;
         }
@@ -1344,6 +1534,7 @@
     window.showPage = showPage;
     window.buyUpgrade = buyUpgrade;
     window.claimHutReward = claimHutReward;
+    window.closePookowskiAnimation = closePookowskiAnimation;
 
     updateTowers();
     updateAchievements();
