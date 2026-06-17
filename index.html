@@ -47,7 +47,7 @@
       margin: 25px auto;
       border: 2px solid #49ff5a;
       border-radius: 30px;
-      width: 620px;
+      width: 760px;
       display: flex;
       overflow: hidden;
       box-shadow: 0 0 15px #49ff5a;
@@ -294,6 +294,42 @@
       padding: 15px;
     }
 
+    .cheet-hut-box {
+      margin: 20px auto;
+      max-width: 700px;
+      padding: 25px;
+      border: 3px solid #49ff5a;
+      border-radius: 20px;
+      background: #080808;
+      box-shadow: 0 0 25px #49ff5a, inset 0 0 20px #4d1010;
+    }
+
+    .cheet-hut-img {
+      width: 280px;
+      max-width: 90%;
+      border-radius: 20px;
+      border: 3px solid #49ff5a;
+      box-shadow: 0 0 20px #ff3030;
+      background: white;
+    }
+
+    .chet-panel {
+      margin: 20px auto 0;
+      padding: 18px;
+      max-width: 520px;
+      border: 2px solid #ff3030;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #111, #1d0606);
+      box-shadow: 0 0 18px #ff3030;
+      color: #49ff5a;
+    }
+
+    .chet-panel h3 {
+      margin-top: 0;
+      color: #49ff5a;
+      text-shadow: 0 0 8px #49ff5a;
+    }
+
     .leaderboard {
       width: 98%;
       margin: 20px auto;
@@ -349,6 +385,7 @@
     <button onclick="showPage('roll')" class="active">Roll</button>
     <button onclick="showPage('towers')">Towers</button>
     <button onclick="showPage('achievements')">Achievements</button>
+    <button onclick="showPage('cheetHut')">Cheet Hut</button>
     <button onclick="showPage('leaderboard')">Leaderboard</button>
   </div>
 
@@ -389,6 +426,21 @@
   <div id="achievementsPage" style="display:none;">
     <h2>Completed Achievements</h2>
     <div class="tower-grid" id="achievementGrid"></div>
+  </div>
+
+  <div id="cheetHutPage" style="display:none;">
+    <h2>🛖 Cheet Hut</h2>
+
+    <div class="cheet-hut-box">
+      <img class="cheet-hut-img" src="cheet-hut.png">
+
+      <div class="chet-panel">
+        <h3>🟢 Chet Panel</h3>
+        <p>Welcome to the Cheet Hut.</p>
+        <p>Chet is watching your rolls from inside the hut.</p>
+        <p class="small-note">Coming soon: luck boosts, faster rolls, secret upgrades, and Cheet Hut rewards.</p>
+      </div>
+    </div>
   </div>
 
   <div id="leaderboardPage" style="display:none;">
@@ -942,6 +994,7 @@
       document.getElementById("rollPage").style.display = "none";
       document.getElementById("towersPage").style.display = "none";
       document.getElementById("achievementsPage").style.display = "none";
+      document.getElementById("cheetHutPage").style.display = "none";
       document.getElementById("leaderboardPage").style.display = "none";
 
       document.getElementById(page + "Page").style.display = "block";
@@ -952,7 +1005,8 @@
       if (page === "roll") buttons[0].classList.add("active");
       if (page === "towers") buttons[1].classList.add("active");
       if (page === "achievements") buttons[2].classList.add("active");
-      if (page === "leaderboard") buttons[3].classList.add("active");
+      if (page === "cheetHut") buttons[3].classList.add("active");
+      if (page === "leaderboard") buttons[4].classList.add("active");
 
       updateTowers();
       updateAchievements();
