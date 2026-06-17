@@ -2,7 +2,6 @@
 <html>
 <head>
   <title>Cheet🛖 RNG</title>
-
   <style>
     body {
       margin: 0;
@@ -83,7 +82,7 @@
       box-shadow: 0 0 8px #49ff5a;
     }
 
-    .login-button, .logout-button, .save-button {
+    .login-button, .logout-button, .save-button, .roll-button, .auto-button, .stop-button {
       padding: 12px 22px;
       font-size: 17px;
       border: 2px solid #49ff5a;
@@ -95,25 +94,7 @@
       margin: 6px;
     }
 
-    .logout-button {
-      border-color: #ff3030;
-      color: #ff3030;
-      box-shadow: 0 0 12px #ff3030;
-    }
-
-    .roll-button, .auto-button, .stop-button {
-      padding: 15px 30px;
-      font-size: 18px;
-      border: 2px solid #49ff5a;
-      border-radius: 15px;
-      background: #111;
-      color: #49ff5a;
-      cursor: pointer;
-      box-shadow: 0 0 12px #49ff5a;
-      margin: 6px;
-    }
-
-    .stop-button {
+    .logout-button, .stop-button {
       border-color: #ff3030;
       color: #ff3030;
       box-shadow: 0 0 12px #ff3030;
@@ -461,32 +442,16 @@
     }
 
     @keyframes pookowskiBgFlash {
-      from {
-        filter: brightness(1);
-      }
-      to {
-        filter: brightness(1.45);
-      }
+      from { filter: brightness(1); }
+      to { filter: brightness(1.45); }
     }
 
     @keyframes pookowskiZoom {
-      0% {
-        transform: scale(0.15) rotate(-8deg);
-        opacity: 0;
-      }
-      20% {
-        opacity: 1;
-      }
-      50% {
-        transform: scale(1.05) rotate(4deg);
-      }
-      75% {
-        transform: scale(0.96) rotate(-2deg);
-      }
-      100% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-      }
+      0% { transform: scale(0.15) rotate(-8deg); opacity: 0; }
+      20% { opacity: 1; }
+      50% { transform: scale(1.05) rotate(4deg); }
+      75% { transform: scale(0.96) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
     }
 
     @keyframes pookowskiShake {
@@ -585,7 +550,7 @@
         <div class="shop-card">
           <h3>🍀 Luck Boost</h3>
           <p>Level: <span id="luckLevel">0</span></p>
-          <p>Boosts mythic, secret, and cheeter odds a little.</p>
+          <p>Boosts mythic, secret, and cheeter odds.</p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
           <button onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
@@ -643,53 +608,53 @@
     const provider = new GoogleAuthProvider();
 
     const items = [
-      { name: "GalaxyTDS For President", image: "GalaxyTDS For President.png", chance: 80, rarity: "common" },
-      { name: "Jester", image: "Jester.png", chance: 30, rarity: "common" },
-      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 25.15319, rarity: "common" },
+      { name: "GalaxyTDS For President", image: "GalaxyTDS For President.png", chance: 1.25, rarity: "common" },
+      { name: "Jester", image: "Jester.png", chance: 3.33, rarity: "common" },
+      { name: "Gataling Goon", image: "Gataling Goon.png", chance: 3.98, rarity: "common" },
 
-      { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 20, rarity: "rare" },
-      { name: "Void Reaver", image: "Void Reaver.png", chance: 20, rarity: "rare" },
-      { name: "Freezer", image: "Freezer.png", chance: 15, rarity: "rare" },
+      { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 5, rarity: "rare" },
+      { name: "Void Reaver", image: "Void Reaver.png", chance: 5, rarity: "rare" },
+      { name: "Freezer", image: "Freezer.png", chance: 6.67, rarity: "rare" },
       { name: "hitmanthefirst", image: "hitmanthefirst.png", chance: 10, rarity: "rare" },
       { name: "SpikeH", image: "SpikeH.png", chance: 10, rarity: "rare" },
       { name: "Commander", image: "Commander.png", chance: 10, rarity: "rare" },
 
       { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
 
-      { name: "Mercenary Base", image: "Mercenary Base.png", chance: 7, rarity: "legendary" },
-      { name: "5ouls", image: "5ouls.png", chance: 5, rarity: "legendary" },
-      { name: "CORSO", image: "CORSO.png", chance: 5, rarity: "legendary" },
-      { name: "Eggrypted", image: "Eggrypted.png", chance: 5, rarity: "legendary" },
-      { name: "Accelerator", image: "accelerator.png", chance: 4, rarity: "legendary" },
+      { name: "Mercenary Base", image: "Mercenary Base.png", chance: 14.29, rarity: "legendary" },
+      { name: "5ouls", image: "5ouls.png", chance: 20, rarity: "legendary" },
+      { name: "CORSO", image: "CORSO.png", chance: 20, rarity: "legendary" },
+      { name: "Eggrypted", image: "Eggrypted.png", chance: 20, rarity: "legendary" },
+      { name: "Accelerator", image: "accelerator.png", chance: 25, rarity: "legendary" },
 
-      { name: "Engineer", image: "engineer.png", chance: 2, rarity: "mythic" },
-      { name: "Rezhexx", image: "Rezhexx.png", chance: 1, rarity: "mythic" },
-      { name: "DankTDS", image: "DankTDS.png", chance: 1, rarity: "mythic" },
-      { name: "Wuatt", image: "Wuatt.png", chance: 1, rarity: "mythic" },
-      { name: "BustedBot", image: "BustedBot.png", chance: 1, rarity: "mythic" },
-      { name: "Brazil0987", image: "brazil0987.png", chance: 0.987, rarity: "mythic" },
-      { name: "Truabgke", image: "Truabgke.png", chance: 0.67, rarity: "mythic" },
-      { name: "Tom5551", image: "Tom5551.png", chance: 0.5551, rarity: "mythic" },
-      { name: "Wawacat4436", image: "wawacat.png", chance: 0.4436, rarity: "mythic" },
-      { name: "Brawler", image: "Brawler.png", chance: 0.5, rarity: "mythic" },
-      { name: "OhhStrike", image: "OhhStrike.png", chance: 0.5, rarity: "mythic" },
-      { name: "Kero", image: "Kero.png", chance: 0.5, rarity: "mythic" },
-      { name: "ProfessionalNoLifer", image: "ProfessionalNoLifer.png", chance: 0.5, rarity: "mythic" },
-      { name: "Rotfzz", image: "Rotfzz.png", chance: 0.5, rarity: "mythic" },
+      { name: "Engineer", image: "engineer.png", chance: 50, rarity: "mythic" },
+      { name: "Rezhexx", image: "Rezhexx.png", chance: 100, rarity: "mythic" },
+      { name: "DankTDS", image: "DankTDS.png", chance: 100, rarity: "mythic" },
+      { name: "Wuatt", image: "Wuatt.png", chance: 100, rarity: "mythic" },
+      { name: "BustedBot", image: "BustedBot.png", chance: 100, rarity: "mythic" },
+      { name: "Brawler", image: "Brawler.png", chance: 200, rarity: "mythic" },
+      { name: "OhhStrike", image: "OhhStrike.png", chance: 200, rarity: "mythic" },
+      { name: "Kero", image: "Kero.png", chance: 200, rarity: "mythic" },
+      { name: "ProfessionalNoLifer", image: "ProfessionalNoLifer.png", chance: 200, rarity: "mythic" },
+      { name: "Rotfzz", image: "Rotfzz.png", chance: 200, rarity: "mythic" },
+      { name: "Truabgke", image: "Truabgke.png", chance: 149, rarity: "mythic" },
+      { name: "Brazil0987", image: "brazil0987.png", chance: 987, rarity: "mythic" },
+      { name: "Wawacat4436", image: "wawacat.png", chance: 4436, rarity: "mythic" },
+      { name: "Tom5551", image: "Tom5551.png", chance: 5551, rarity: "mythic" },
 
-      { name: "KanTDS", image: "KanTDS.png", chance: 0.2, rarity: "secret" },
-      { name: "Craigity3", image: "Craigity3.png", chance: 0.2, rarity: "secret" },
-      { name: "CheeseV", image: "CheeseV.png", chance: 0.2, rarity: "secret" },
-      { name: "Artur Silva", image: "Artur Silva.png", chance: 0.05, rarity: "secret" },
-      { name: "DIMIS_PLAYZ", image: "DIMIS_PLAYZ.png", chance: 0.01, rarity: "secret" },
-      { name: "Platter Bros", image: "Platter Bros.png", chance: 0.01, rarity: "secret" },
-      { name: "Trix", image: "Trix.png", chance: 0.01, rarity: "secret" },
-      { name: "SuperDadPete83", image: "SuperDadPete83.png", chance: 0.005, rarity: "secret" },
-      { name: "Purple Trapper", image: "Purple Trapper.png", chance: 0.005, rarity: "secret" },
-      { name: "epstain bros", image: "epstain bros.png", chance: 0.001, rarity: "secret" },
-      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 0.0001, rarity: "secret" },
+      { name: "KanTDS", image: "KanTDS.png", chance: 500, rarity: "secret" },
+      { name: "Craigity3", image: "Craigity3.png", chance: 500, rarity: "secret" },
+      { name: "CheeseV", image: "CheeseV.png", chance: 500, rarity: "secret" },
+      { name: "Artur Silva", image: "Artur Silva.png", chance: 2000, rarity: "secret" },
+      { name: "DIMIS_PLAYZ", image: "DIMIS_PLAYZ.png", chance: 10000, rarity: "secret" },
+      { name: "Platter Bros", image: "Platter Bros.png", chance: 10000, rarity: "secret" },
+      { name: "Trix", image: "Trix.png", chance: 10000, rarity: "secret" },
+      { name: "NorthKorea0987", image: "NorthKorea0987.png", chance: 10987, rarity: "secret" },
+      { name: "SuperDadPete83", image: "SuperDadPete83.png", chance: 20000, rarity: "secret" },
+      { name: "Purple Trapper", image: "Purple Trapper.png", chance: 20000, rarity: "secret" },
+      { name: "epstain bros", image: "epstain bros.png", chance: 100000, rarity: "secret" },
 
-      { name: "Pookowski", image: "chet.png", chance: 0.00001, rarity: "cheeter" }
+      { name: "Pookowski", image: "chet.png", chance: 10000000, rarity: "cheeter" }
     ];
 
     const achievementList = [
@@ -713,7 +678,7 @@
     let inventory = {};
     let achievements = {};
     let rolls = 0;
-    let bestChance = 101;
+    let bestChance = 0;
     let bestItem = "None";
     let isRolling = false;
     let autoRollEnabled = false;
@@ -721,11 +686,7 @@
     let lastAutoRollTime = Date.now();
 
     let cheetCoins = 0;
-    let upgrades = {
-      luck: 0,
-      speed: 0,
-      secret: 0
-    };
+    let upgrades = { luck: 0, speed: 0, secret: 0 };
     let lastHutReward = 0;
 
     function escapeHtml(text) {
@@ -738,7 +699,8 @@
     }
 
     function formatChance(chance) {
-      return chance + "%";
+      if (chance % 1 === 0) return "1 in " + chance;
+      return "1 in " + chance.toFixed(2);
     }
 
     function cleanUsername(name) {
@@ -771,7 +733,7 @@
         showQuestionMarkImage();
       }
 
-      document.getElementById("resultChance").textContent = formatChance(item.chance) + " chance";
+      document.getElementById("resultChance").textContent = formatChance(item.chance);
     }
 
     function showPookowskiAnimation() {
@@ -894,7 +856,7 @@
         inventory = {};
         achievements = {};
         rolls = 0;
-        bestChance = 101;
+        bestChance = 0;
         bestItem = "None";
         cheetCoins = 0;
         upgrades = { luck: 0, speed: 0, secret: 0 };
@@ -933,7 +895,7 @@
         username = data.username || "";
         rolls = data.rolls || 0;
         bestItem = data.bestItem || "None";
-        bestChance = data.bestChance || 101;
+        bestChance = data.bestChance || 0;
         inventory = data.inventory || {};
         achievements = data.achievements || {};
         cheetCoins = data.cheetCoins || 0;
@@ -944,22 +906,12 @@
         if (upgrades.speed === undefined) upgrades.speed = 0;
         if (upgrades.secret === undefined) upgrades.secret = 0;
       } else {
-        username = "";
-        rolls = 0;
-        bestItem = "None";
-        bestChance = 101;
-        inventory = {};
-        achievements = {};
-        cheetCoins = 0;
-        upgrades = { luck: 0, speed: 0, secret: 0 };
-        lastHutReward = 0;
-
         await set(playerRef, {
           uid: currentUser.uid,
           username: "",
           rolls: 0,
           bestItem: "None",
-          bestChance: 101,
+          bestChance: 0,
           inventory: {},
           achievements: {},
           cheetCoins: 0,
@@ -1038,11 +990,11 @@
     function showRarityAnnouncement(item) {
       let announcement = document.getElementById("rarityAnnouncement");
 
-      if (item.chance <= 0.1) {
+      if (item.chance >= 1000 || item.rarity === "cheeter") {
         if (item.rarity === "cheeter") {
           announcement.textContent = "🚨 CHEETER TIER PULLED! " + username + " got " + item.name + "! 🚨";
         } else {
-          announcement.textContent = "✨ 0.1% OR RARER PULLED! " + username + " got " + item.name + "! ✨";
+          announcement.textContent = "✨ RARE PULL! " + username + " got " + item.name + " - " + formatChance(item.chance) + "! ✨";
         }
 
         announcement.style.display = "block";
@@ -1055,82 +1007,43 @@
       }
     }
 
+    function getItemWeight(item) {
+      let weight = 1 / item.chance;
+
+      if (item.rarity === "mythic") {
+        weight *= 1 + upgrades.luck * 0.04;
+      }
+
+      if (item.rarity === "secret") {
+        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
+      }
+
+      if (item.rarity === "cheeter") {
+        weight *= 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
+      }
+
+      return weight;
+    }
+
     function getRandomItem() {
-      let rarityChances = [
-        { rarity: "common", chance: 55 },
-        { rarity: "rare", chance: 20 },
-        { rarity: "epic", chance: 10 },
-        { rarity: "legendary", chance: 7 },
-        { rarity: "mythic", chance: 6 },
-        { rarity: "secret", chance: 1.99 },
-        { rarity: "cheeter", chance: 0.01 }
-      ];
-
-      let luckBoost = upgrades.luck * 0.04;
-      let secretBoost = upgrades.secret * 0.12;
-      let cheeterBoost = upgrades.secret * 0.15;
-
-      for (let pool of rarityChances) {
-        if (pool.rarity === "mythic") {
-          pool.chance *= 1 + luckBoost;
-        }
-
-        if (pool.rarity === "secret") {
-          pool.chance *= 1 + luckBoost + secretBoost;
-        }
-
-        if (pool.rarity === "cheeter") {
-          pool.chance *= 1 + luckBoost + cheeterBoost;
-        }
-      }
-
-      let totalChance = 0;
-
-      for (let pool of rarityChances) {
-        totalChance += pool.chance;
-      }
-
-      let random = Math.random() * totalChance;
-      let current = 0;
-      let chosenRarity = "common";
-
-      for (let pool of rarityChances) {
-        current += pool.chance;
-
-        if (random <= current) {
-          chosenRarity = pool.rarity;
-          break;
-        }
-      }
-
-      let possibleItems = items.filter(function(item) {
-        return item.rarity === chosenRarity;
-      });
-
-      if (possibleItems.length === 0) {
-        possibleItems = items.filter(function(item) {
-          return item.rarity === "common";
-        });
-      }
-
       let totalWeight = 0;
 
-      for (let item of possibleItems) {
-        totalWeight += item.chance;
+      for (let item of items) {
+        totalWeight += getItemWeight(item);
       }
 
-      let itemRandom = Math.random() * totalWeight;
-      let itemCurrent = 0;
+      let random = Math.random() * totalWeight;
+      let current = 0;
 
-      for (let item of possibleItems) {
-        itemCurrent += item.chance;
+      for (let item of items) {
+        current += getItemWeight(item);
 
-        if (itemRandom <= itemCurrent) {
+        if (random <= current) {
           return item;
         }
       }
 
-      return possibleItems[0];
+      return items[0];
     }
 
     function getRollDelays() {
@@ -1203,7 +1116,7 @@
 
       document.getElementById("resultName").textContent = item.name;
       showResultImage(item.image);
-      document.getElementById("resultChance").textContent = formatChance(item.chance) + " weight";
+      document.getElementById("resultChance").textContent = formatChance(item.chance);
 
       showRarityAnnouncement(item);
 
@@ -1221,7 +1134,7 @@
         inventory[item.name] = 1;
       }
 
-      if (item.chance < bestChance || bestItem === "None") {
+      if (item.chance > bestChance || bestItem === "None") {
         bestChance = item.chance;
         bestItem = item.name;
         document.getElementById("bestItem").textContent = bestItem;
@@ -1311,12 +1224,12 @@
           inventory[item.name] = 1;
         }
 
-        if (item.chance < bestChance || bestItem === "None") {
+        if (item.chance > bestChance || bestItem === "None") {
           bestChance = item.chance;
           bestItem = item.name;
         }
 
-        if (!bestCaughtItem || item.chance < bestCaughtItem.chance) {
+        if (!bestCaughtItem || item.chance > bestCaughtItem.chance) {
           bestCaughtItem = item;
         }
 
@@ -1346,7 +1259,7 @@
         showResultImage(bestCaughtItem.image);
       }
 
-      if (bestCaughtItem && bestCaughtItem.chance <= 0.1) {
+      if (bestCaughtItem && bestCaughtItem.chance >= 1000) {
         showRarityAnnouncement(bestCaughtItem);
       }
 
@@ -1370,7 +1283,7 @@
       grid.innerHTML = "";
 
       let sortedItems = [...items].sort(function(a, b) {
-        return a.chance - b.chance;
+        return b.chance - a.chance;
       });
 
       for (let item of sortedItems) {
@@ -1382,7 +1295,7 @@
           tower.innerHTML = `
             <img src="${item.image}">
             <div class="tower-name">${escapeHtml(item.name)}</div>
-            <div class="chance">${formatChance(item.chance)} weight</div>
+            <div class="chance">${formatChance(item.chance)}</div>
             <div class="amount">Owned: ${inventory[item.name]}</div>
             <div class="amount">Rarity: ${escapeHtml(item.rarity.toUpperCase())}</div>
           `;
@@ -1391,7 +1304,7 @@
 
           tower.innerHTML = `
             <div class="question">???</div>
-            <div class="chance">${formatChance(item.chance)} weight</div>
+            <div class="chance">${formatChance(item.chance)}</div>
             <div>Locked Tower</div>
           `;
         }
