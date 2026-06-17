@@ -527,7 +527,7 @@
 
     let autoRollEnabled = false;
     let lastAutoRollTime = Date.now();
-    let AUTO_ROLL_TIME = 3000;
+    let AUTO_ROLL_TIME = 2500;
 
     function escapeHtml(text) {
       return String(text)
@@ -759,11 +759,9 @@
       let spinCount = 0;
 
       let delays = [
-        25, 25, 25, 30, 30, 35, 35, 40, 40, 45,
-        50, 55, 60, 70, 80, 95, 110, 130, 155,
-        185, 220, 260, 310, 385
-      ];
-
+  15, 15, 20, 20, 25, 25, 30, 35,
+  40, 50, 60, 75, 90, 110, 130
+];
       document.getElementById("resultName").classList.add("rolling");
       document.getElementById("resultImage").classList.add("rolling");
       document.getElementById("questionMarkImage").classList.add("rolling");
