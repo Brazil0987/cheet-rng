@@ -918,9 +918,9 @@
       document.getElementById("resultName").textContent = "Auto roll caught up!";
       document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls";
 
-      if (bestCaughtItem) {
-        showResultImage(bestCaughtItem.image);
-      }
+      if (bestCaughtItem && bestCaughtItem.chance <= 0.1) {
+  showRarityAnnouncement(bestCaughtItem);
+}
 
       if (autoRollEnabled && !isRolling) {
         rollItem();
