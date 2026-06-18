@@ -1407,12 +1407,17 @@
         estimatedRollTime = 2200;
       }
 
-      let missedRolls = Math.floor((now - lastAutoRollTime) / estimatedRollTime);
+      let maxAfkTime = 12 * 60 * 60 * 1000; // 12 hours
+      let afkTime = now - lastAutoRollTime;
+
+      if (afkTime > maxAfkTime) {
+        afkTime = maxAfkTime;
+      }
+
+      let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
       if (missedRolls <= 0) return;
 
-      let maxCatchUpRolls = 25;
-      missedRolls = Math.min(missedRolls, maxCatchUpRolls);
       lastAutoRollTime = now;
 
       let bestCaughtItem = null;
