@@ -697,8 +697,8 @@
       { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 5, rarity: "rare" },
       { name: "Void Reaver", image: "Void Reaver.png", chance: 5, rarity: "rare" },
       { name: "Freezer", image: "Freezer.png", chance: 6.67, rarity: "rare" },
-      { name: "hitmanthefirst", image: "hitmanthefirst.png", chance: 10, rarity: "legendary", manualRarity: true },
-      { name: "SpikeH", image: "SpikeH.png", chance: 10, rarity: "epic", manualRarity: true },
+      { name: "hitmanthefirst", image: "hitmanthefirst.png", chance: 200, rarity: "legendary", manualRarity: true },
+      { name: "SpikeH", image: "SpikeH.png", chance: 100, rarity: "epic", manualRarity: true },
       { name: "Commander", image: "Commander.png", chance: 10, rarity: "rare" },
 
       { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
@@ -983,6 +983,14 @@
         bestItem = data.bestItem || "None";
         bestChance = data.bestChance || 0;
         inventory = data.inventory || {};
+if (inventory["Trix"]) {
+  inventory["MinhTri"] = (inventory["MinhTri"] || 0) + inventory["Trix"];
+  delete inventory["Trix"];
+}
+
+if (bestItem === "Trix") {
+  bestItem = "MinhTri";
+}
         achievements = data.achievements || {};
         cheetCoins = data.cheetCoins || 0;
         upgrades = data.upgrades || { luck: 0, speed: 0, secret: 0 };
