@@ -424,6 +424,55 @@
       font-size: 14px;
     }
 
+
+    #afkCatchupPopup {
+      display: none;
+      position: fixed;
+      z-index: 999998;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    #afkCatchupPopup.show {
+      display: flex;
+    }
+
+    .afk-box {
+      width: 90%;
+      max-width: 560px;
+      padding: 35px 25px;
+      border-radius: 24px;
+      border: 3px solid #49ff5a;
+      background: radial-gradient(circle at top, #123817, #080808 60%, #240000);
+      color: white;
+      box-shadow: 0 0 30px #49ff5a, 0 0 45px #ff3030, inset 0 0 18px #49ff5a;
+      text-align: center;
+      animation: afkPopupPulse 0.8s infinite alternate;
+    }
+
+    .afk-box h2 {
+      margin: 0 0 15px;
+      color: #49ff5a;
+      font-size: 38px;
+      text-shadow: 0 0 12px #49ff5a, 0 0 20px #ff3030;
+    }
+
+    #afkCatchupText {
+      margin: 0;
+      font-size: 24px;
+      color: gold;
+      font-weight: bold;
+      text-shadow: 0 0 10px gold;
+    }
+
+    @keyframes afkPopupPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.03); }
+    }
+
     #pookowskiOverlay {
       display: none;
       position: fixed;
@@ -516,6 +565,14 @@
 </head>
 
 <body>
+
+
+  <div id="afkCatchupPopup">
+    <div class="afk-box">
+      <h2>Auto Roll Caught Up!</h2>
+      <p id="afkCatchupText">+0 rolls while AFK</p>
+    </div>
+  </div>
 
   <div id="pookowskiOverlay">
     <div class="pookowski-title">🚨 CHEETER TIER 🚨</div>
@@ -837,6 +894,21 @@
       }
 
       document.getElementById("resultChance").textContent = formatChance(item.chance);
+    }
+
+
+    function showAfkCatchupPopup(missedRolls, coinsEarned) {
+      let popup = document.getElementById("afkCatchupPopup");
+      let text = document.getElementById("afkCatchupText");
+
+      if (!popup || !text) return;
+
+      text.textContent = "+" + missedRolls + " rolls while AFK • +" + coinsEarned + " coins";
+      popup.classList.add("show");
+
+      setTimeout(function() {
+        popup.classList.remove("show");
+      }, 4000);
     }
 
     function showPookowskiAnimation() {
@@ -1469,6 +1541,7 @@
 
       document.getElementById("resultName").textContent = "Auto roll caught up!";
       document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls while AFK • +" + totalCoinReward + " coins";
+      showAfkCatchupPopup(missedRolls, totalCoinReward);
 
       if (bestCaughtItem) {
         showResultImage(bestCaughtItem.image);
