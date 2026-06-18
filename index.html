@@ -1482,13 +1482,18 @@
         showPookowskiAnimation();
       }
 
-      if (autoRollEnabled && !isRolling) {
-        setTimeout(function() {
-          if (autoRollEnabled && !isRolling) {
+      let wasAutoRolling = autoRollEnabled;
+      autoRollEnabled = false;
+
+      setTimeout(function() {
+        if (wasAutoRolling && currentUser && hasUsername()) {
+          autoRollEnabled = true;
+
+          if (!isRolling) {
             rollItem();
           }
-        }, 4000);
-      }
+        }
+      }, 4000);
     }
 
     document.addEventListener("visibilitychange", function() {
