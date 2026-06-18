@@ -1175,9 +1175,45 @@
         cheetCoins: cheetCoins,
         upgrades: upgrades,
         lastHutReward: lastHutReward,
-        autoRollSaved: autoRollEnabled,
+        autoRollSaved: autoRollSaved,
         lastAutoRollTime: lastAutoRollTime
       });
+    }
+
+
+
+    async function saveAfkTimerNow() {
+      if (!currentUser) return;
+      if (!hasUsername()) return;
+      if (!autoRollEnabled) return;
+
+      autoRollSaved = true;
+      lastAutoRollTime = Date.now();
+
+      await update(ref(database, "leaderboard/" + currentUser.uid), {
+        autoRollSaved: true,
+        lastAutoRollTime: lastAutoRollTime
+      });
+    }
+
+    async function refreshAfkTimerFromFirebase() {
+      if (!currentUser) return;
+
+      try {
+        const playerRef = ref(database, "leaderboard/" + currentUser.uid);
+        const snapshot = await get(playerRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          autoRollSaved = data.autoRollSaved || false;
+
+          if (data.lastAutoRollTime) {
+            lastAutoRollTime = data.lastAutoRollTime;
+          }
+        }
+      } catch (error) {
+        console.log("AFK timer refresh failed:", error);
+      }
     }
 
     function showRarityAnnouncement(item) {
@@ -1477,6 +1513,8 @@
       update(ref(database, "leaderboard/" + currentUser.uid), {
         autoRollSaved: true,
         lastAutoRollTime: lastAutoRollTime
+      }).then(function() {
+        console.log("AFK auto-roll timer saved.");
       }).catch(function(error) {
         console.log("Auto-roll save failed:", error);
       });
@@ -1502,9 +1540,12 @@
     }
 
     async function catchUpAutoRolls() {
-      if (!autoRollEnabled && !autoRollSaved) return;
       if (!currentUser) return;
       if (!hasUsername()) return;
+
+      await refreshAfkTimerFromFirebase();
+
+      if (!autoRollEnabled && !autoRollSaved) return;
 
       let now = Date.now();
       let estimatedRollTime = 4000 - upgrades.speed * 200;
@@ -1522,12 +1563,7 @@
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (missedRolls <= 0) {
-        if (autoRollEnabled && !isRolling && currentUser && hasUsername()) {
-          rollItem();
-        }
-        return;
-      }
+      if (missedRolls <= 0) return;
 
       lastAutoRollTime = now;
 
@@ -1609,9 +1645,19 @@
     }
 
     document.addEventListener("visibilitychange", function() {
-      if (!document.hidden) {
+      if (document.hidden) {
+        saveAfkTimerNow().catch(function(error) {
+          console.log("AFK timer save failed:", error);
+        });
+      } else {
         catchUpAutoRolls();
       }
+    });
+
+    window.addEventListener("blur", function() {
+      saveAfkTimerNow().catch(function(error) {
+        console.log("AFK timer save failed:", error);
+      });
     });
 
     window.addEventListener("focus", function() {
