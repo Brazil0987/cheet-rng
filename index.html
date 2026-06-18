@@ -638,28 +638,28 @@
       <h2>How Rarities Work</h2>
       <div class="rarity-steps">
         <p><b>The game does not roll rarity first anymore.</b></p>
-        <p>Every tower is in one big weighted roll pool.</p>
-        <p>The game uses <b>weight = 1 / chance</b>. A tower marked <b>1 in 500</b> has more weight than a tower marked <b>1 in 5000</b>, so the 1 in 500 tower is about <b>10x easier</b> to get.</p>
-        <p><b>Bigger 1 in X number = rarer tower.</b></p>
-        <p>Rarity names are now based on the tower's own rarity number. The rarer the tower, the higher its rarity tier.</p>
+        <p><b>Every tower is in one big weighted pool.</b> The tower you get is chosen using its <b>1 in X</b> number.</p>
+        <p><b>Weight formula:</b> weight = 1 / chance.</p>
+        <p><b>Bigger 1 in X = rarer tower.</b> A 1 in 5000 tower has a much smaller weight than a 1 in 500 tower.</p>
       </div>
 
       <div class="rarity-info-grid">
-        <div class="rarity-info-card common"><strong>Common</strong><br>1 in 1 to 1 in 4</div>
-        <div class="rarity-info-card rare"><strong>Rare</strong><br>1 in 5 to 1 in 99</div>
-        <div class="rarity-info-card epic"><strong>Epic</strong><br>1 in 100 to 1 in 199</div>
-        <div class="rarity-info-card legendary"><strong>Legendary</strong><br>1 in 200 to 1 in 499</div>
-        <div class="rarity-info-card mythic"><strong>Mythic</strong><br>1 in 500 to 1 in 9,999</div>
-        <div class="rarity-info-card secret"><strong>Secret</strong><br>1 in 10,000 to 1 in 9,999,999</div>
+        <div class="rarity-info-card common"><strong>Common</strong><br>Usually below 1 in 5</div>
+        <div class="rarity-info-card rare"><strong>Rare</strong><br>1 in 5+</div>
+        <div class="rarity-info-card epic"><strong>Epic</strong><br>1 in 100+</div>
+        <div class="rarity-info-card legendary"><strong>Legendary</strong><br>1 in 200+</div>
+        <div class="rarity-info-card mythic"><strong>Mythic</strong><br>1 in 500+</div>
+        <div class="rarity-info-card secret"><strong>Secret</strong><br>1 in 10,000+</div>
         <div class="rarity-info-card cheeter"><strong>Cheeter</strong><br>1 in 10,000,000+</div>
       </div>
 
       <div class="rarity-steps">
         <h3>Extra Notes</h3>
         <p><b>Hidden towers stay secret:</b> This page explains the rarity system, but it does not reveal special hidden tower names.</p>
-        <p><b>Same rarity example:</b> If two towers are both Mythic, the one with the bigger <b>1 in X</b> number is rarer.</p>
-        <p><b>Boosts:</b> Luck boosts Mythic, Secret, and Cheeter tower weights. Secret Upgrade boosts Secret and Cheeter tower weights.</p>
-        <p><b>Simple rule:</b> All towers roll together. The tower's <b>1 in X</b> number decides how rare it is, and that number also decides its rarity label.</p>
+        <p><b>Same pool:</b> A Secret tower does not need to hit a Secret tier first. It is just rarer because its <b>1 in X</b> number is higher.</p>
+        <p><b>Same example:</b> 1 in 500 has weight <b>0.002</b>. 1 in 5000 has weight <b>0.0002</b>. That makes 1 in 500 about <b>10x more likely</b> than 1 in 5000.</p>
+        <p><b>Rarity labels:</b> Most rarity labels are based on the tower's <b>1 in X</b> number. Some towers can be manually placed into a higher rarity for balancing.</p>
+        <p><b>Boosts:</b> Luck boosts Mythic, Secret, and Cheeter towers. Secret Upgrade boosts Secret and Cheeter towers.</p>
       </div>
     </div>
   </div>
@@ -697,8 +697,8 @@
       { name: "JOHN ROBLOX", image: "JOHN ROBLOX.png", chance: 5, rarity: "rare" },
       { name: "Void Reaver", image: "Void Reaver.png", chance: 5, rarity: "rare" },
       { name: "Freezer", image: "Freezer.png", chance: 6.67, rarity: "rare" },
-      { name: "hitmanthefirst", image: "hitmanthefirst.png", chance: 10, rarity: "rare" },
-      { name: "SpikeH", image: "SpikeH.png", chance: 10, rarity: "rare" },
+      { name: "hitmanthefirst", image: "hitmanthefirst.png", chance: 10, rarity: "legendary", manualRarity: true },
+      { name: "SpikeH", image: "SpikeH.png", chance: 10, rarity: "epic", manualRarity: true },
       { name: "Commander", image: "Commander.png", chance: 10, rarity: "rare" },
 
       { name: "Hacker", image: "Hacker.png", chance: 10, rarity: "epic" },
@@ -1106,7 +1106,9 @@
     }
 
     for (let item of items) {
-      item.rarity = getAutoRarity(item.chance);
+      if (!item.manualRarity) {
+        item.rarity = getAutoRarity(item.chance);
+      }
     }
 
     function getRarityOrder(rarity) {
