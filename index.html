@@ -842,6 +842,7 @@
     let bestItem = "None";
     let isRolling = false;
     let autoRollEnabled = false;
+    let autoRollSaved = false;
     let leaderboardData = {};
     let lastAutoRollTime = Date.now();
 
@@ -1037,6 +1038,7 @@
         cheetCoins = 0;
         upgrades = { luck: 0, speed: 0, secret: 0 };
         lastHutReward = 0;
+        autoRollSaved = false;
 
         stopAutoRoll();
 
@@ -1077,6 +1079,8 @@
         cheetCoins = data.cheetCoins || 0;
         upgrades = data.upgrades || { luck: 0, speed: 0, secret: 0 };
         lastHutReward = data.lastHutReward || 0;
+        autoRollSaved = data.autoRollSaved || false;
+        lastAutoRollTime = data.lastAutoRollTime || Date.now();
 
         if (upgrades.luck === undefined) upgrades.luck = 0;
         if (upgrades.speed === undefined) upgrades.speed = 0;
@@ -1094,7 +1098,9 @@
           achievements: {},
           cheetCoins: 0,
           upgrades: upgrades,
-          lastHutReward: 0
+          lastHutReward: 0,
+          autoRollSaved: false,
+          lastAutoRollTime: Date.now()
         });
       }
 
@@ -1119,6 +1125,13 @@
       updateAchievements();
       updateCoinsAndShop();
       updateLeaderboard();
+
+      if (autoRollSaved && hasUsername()) {
+        autoRollEnabled = true;
+        setTimeout(function() {
+          catchUpAutoRolls();
+        }, 600);
+      }
     }
 
     async function saveUsername() {
@@ -1161,7 +1174,9 @@
         achievements: achievements,
         cheetCoins: cheetCoins,
         upgrades: upgrades,
-        lastHutReward: lastHutReward
+        lastHutReward: lastHutReward,
+        autoRollSaved: autoRollEnabled,
+        lastAutoRollTime: lastAutoRollTime
       });
     }
 
@@ -1423,11 +1438,11 @@
       updateAchievements();
       updateCoinsAndShop();
 
+      lastAutoRollTime = Date.now();
+
       savePlayerData().catch(function(error) {
         console.log("Save failed:", error);
       });
-
-      lastAutoRollTime = Date.now();
       isRolling = false;
 
       if (currentUser && hasUsername()) {
@@ -1443,7 +1458,7 @@
       }
     }
 
-    function startAutoRoll() {
+    async function startAutoRoll() {
       if (!currentUser) {
         alert("Sign in first!");
         return;
@@ -1456,7 +1471,15 @@
       }
 
       autoRollEnabled = true;
+      autoRollSaved = true;
       lastAutoRollTime = Date.now();
+
+      update(ref(database, "leaderboard/" + currentUser.uid), {
+        autoRollSaved: true,
+        lastAutoRollTime: lastAutoRollTime
+      }).catch(function(error) {
+        console.log("Auto-roll save failed:", error);
+      });
 
       if (!isRolling) {
         rollItem();
@@ -1465,10 +1488,21 @@
 
     function stopAutoRoll() {
       autoRollEnabled = false;
+      autoRollSaved = false;
+      lastAutoRollTime = Date.now();
+
+      if (currentUser) {
+        update(ref(database, "leaderboard/" + currentUser.uid), {
+          autoRollSaved: false,
+          lastAutoRollTime: lastAutoRollTime
+        }).catch(function(error) {
+          console.log("Auto-roll stop save failed:", error);
+        });
+      }
     }
 
     async function catchUpAutoRolls() {
-      if (!autoRollEnabled) return;
+      if (!autoRollEnabled && !autoRollSaved) return;
       if (!currentUser) return;
       if (!hasUsername()) return;
 
@@ -1488,7 +1522,12 @@
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (missedRolls <= 0) return;
+      if (missedRolls <= 0) {
+        if (autoRollEnabled && !isRolling && currentUser && hasUsername()) {
+          rollItem();
+        }
+        return;
+      }
 
       lastAutoRollTime = now;
 
