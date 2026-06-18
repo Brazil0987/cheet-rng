@@ -1468,7 +1468,7 @@
       });
 
       document.getElementById("resultName").textContent = "Auto roll caught up!";
-      document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls • +" + totalCoinReward + " coins";
+      document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls while AFK • +" + totalCoinReward + " coins";
 
       if (bestCaughtItem) {
         showResultImage(bestCaughtItem.image);
@@ -1483,7 +1483,11 @@
       }
 
       if (autoRollEnabled && !isRolling) {
-        rollItem();
+        setTimeout(function() {
+          if (autoRollEnabled && !isRolling) {
+            rollItem();
+          }
+        }, 4000);
       }
     }
 
@@ -1491,6 +1495,14 @@
       if (!document.hidden) {
         catchUpAutoRolls();
       }
+    });
+
+    window.addEventListener("focus", function() {
+      catchUpAutoRolls();
+    });
+
+    window.addEventListener("pageshow", function() {
+      catchUpAutoRolls();
     });
 
     function updateTowers() {
