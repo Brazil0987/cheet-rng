@@ -754,8 +754,20 @@
       { id: "thousandRolls", name: "1,000 Rolls", description: "Roll 1,000 times" },
       { id: "tenThousandRolls", name: "10,000 Rolls", description: "Roll 10,000 times" },
       { id: "hundredThousandRolls", name: "100,000 Rolls", description: "Roll 100,000 times" },
+      { id: "millionRolls", name: "1,000,000 Rolls", description: "Roll 1,000,000 times" },
+      { id: "tenMillionRolls", name: "10,000,000 Rolls", description: "Roll 10,000,000 times" },
+
+      { id: "firstRare", name: "First Rare", description: "Get any Rare tower" },
+      { id: "firstEpic", name: "First Epic", description: "Get any Epic tower" },
+      { id: "firstLegendary", name: "First Legendary", description: "Get any Legendary tower" },
+      { id: "firstMythic", name: "First Mythic", description: "Get any Mythic tower" },
       { id: "firstSecret", name: "First Secret", description: "Get any Secret tower" },
       { id: "firstCheeter", name: "First Cheeter", description: "Get any Cheeter tower" },
+      { id: "firstDuplicate", name: "First Duplicate", description: "Get the same tower twice" },
+      { id: "coinCollector", name: "Coin Collector", description: "Get 1,000 Cheet Coins" },
+      { id: "coinHoarder", name: "Coin Hoarder", description: "Get 100,000 Cheet Coins" },
+      { id: "firstUpgrade", name: "First Upgrade", description: "Buy any upgrade" },
+
       { id: "platterBros", name: "Platter Bros", description: "Get Platter Bros" },
       { id: "epstainBros", name: "epstain bros", description: "Get epstain bros" },
       { id: "dimis", name: "DIMIS_PLAYZ", description: "Get DIMIS_PLAYZ" },
@@ -1535,9 +1547,21 @@ let sortedItems = [...items].sort(function(a, b) {
       if (rolls >= 1000) achievements.thousandRolls = true;
       if (rolls >= 10000) achievements.tenThousandRolls = true;
       if (rolls >= 100000) achievements.hundredThousandRolls = true;
+      if (rolls >= 1000000) achievements.millionRolls = true;
+      if (rolls >= 10000000) achievements.tenMillionRolls = true;
 
+      if (item.rarity === "rare") achievements.firstRare = true;
+      if (item.rarity === "epic") achievements.firstEpic = true;
+      if (item.rarity === "legendary") achievements.firstLegendary = true;
+      if (item.rarity === "mythic") achievements.firstMythic = true;
       if (item.rarity === "secret") achievements.firstSecret = true;
       if (item.rarity === "cheeter") achievements.firstCheeter = true;
+
+      if (inventory[item.name] && inventory[item.name] >= 2) achievements.firstDuplicate = true;
+      if (cheetCoins >= 1000) achievements.coinCollector = true;
+      if (cheetCoins >= 100000) achievements.coinHoarder = true;
+      if (upgrades.luck > 0 || upgrades.speed > 0 || upgrades.secret > 0) achievements.firstUpgrade = true;
+
       if (item.name === "Platter Bros") achievements.platterBros = true;
       if (item.name === "epstain bros") achievements.epstainBros = true;
       if (item.name === "DIMIS_PLAYZ") achievements.dimis = true;
