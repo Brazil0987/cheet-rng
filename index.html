@@ -636,30 +636,36 @@
   <div id="raritiesPage" style="display:none;">
     <div class="rarity-info-box">
       <h2>How Rarities Work</h2>
+
       <div class="rarity-steps">
-        <p><b>The game does not roll rarity first anymore.</b></p>
-        <p><b>Every tower is in one big weighted pool.</b> The tower you get is chosen using its <b>1 in X</b> number.</p>
+        <p>Every tower is in one big roll pool. The game uses each tower's <b>1 in X</b> number to choose what you get.</p>
         <p><b>Weight formula:</b> weight = 1 / chance.</p>
-        <p><b>Bigger 1 in X = rarer tower.</b> A 1 in 5000 tower has a much smaller weight than a 1 in 500 tower.</p>
+        <p>That means a tower with <b>1 in 500</b> has more weight than a tower with <b>1 in 5000</b>.</p>
+        <p><b>Bigger 1 in X = rarer tower.</b></p>
       </div>
 
       <div class="rarity-info-grid">
-        <div class="rarity-info-card common"><strong>Common</strong><br>Usually below 1 in 5</div>
-        <div class="rarity-info-card rare"><strong>Rare</strong><br>1 in 5+</div>
-        <div class="rarity-info-card epic"><strong>Epic</strong><br>1 in 100+</div>
-        <div class="rarity-info-card legendary"><strong>Legendary</strong><br>1 in 200+</div>
-        <div class="rarity-info-card mythic"><strong>Mythic</strong><br>1 in 500+</div>
-        <div class="rarity-info-card secret"><strong>Secret</strong><br>1 in 10,000+</div>
+        <div class="rarity-info-card common"><strong>Common</strong><br>Below 1 in 5</div>
+        <div class="rarity-info-card rare"><strong>Rare</strong><br>1 in 5 to 1 in 99</div>
+        <div class="rarity-info-card epic"><strong>Epic</strong><br>1 in 100 to 1 in 199</div>
+        <div class="rarity-info-card legendary"><strong>Legendary</strong><br>1 in 200 to 1 in 499</div>
+        <div class="rarity-info-card mythic"><strong>Mythic</strong><br>1 in 500 to 1 in 9,999</div>
+        <div class="rarity-info-card secret"><strong>Secret</strong><br>1 in 10,000 to 1 in 9,999,999</div>
         <div class="rarity-info-card cheeter"><strong>Cheeter</strong><br>1 in 10,000,000+</div>
       </div>
 
       <div class="rarity-steps">
-        <h3>Extra Notes</h3>
-        <p><b>Hidden towers stay secret:</b> This page explains the rarity system, but it does not reveal special hidden tower names.</p>
-        <p><b>Same pool:</b> A Secret tower does not need to hit a Secret tier first. It is just rarer because its <b>1 in X</b> number is higher.</p>
-        <p><b>Same example:</b> 1 in 500 has weight <b>0.002</b>. 1 in 5000 has weight <b>0.0002</b>. That makes 1 in 500 about <b>10x more likely</b> than 1 in 5000.</p>
-        <p><b>Rarity labels:</b> Most rarity labels are based on the tower's <b>1 in X</b> number. Some towers can be manually placed into a higher rarity for balancing.</p>
-        <p><b>Boosts:</b> Luck boosts Mythic, Secret, and Cheeter towers. Secret Upgrade boosts Secret and Cheeter towers.</p>
+        <h3>Examples</h3>
+        <p><b>1 in 500:</b> weight = 0.002</p>
+        <p><b>1 in 5000:</b> weight = 0.0002</p>
+        <p>So a <b>1 in 500</b> tower is about <b>10x more likely</b> than a <b>1 in 5000</b> tower.</p>
+        <p>A Secret tower does not need to hit a Secret tier first. It is Secret because its <b>1 in X</b> number is high.</p>
+      </div>
+
+      <div class="rarity-steps">
+        <h3>Important Notes</h3>
+        <p><b>Hidden towers stay secret:</b> this page explains the system without revealing special hidden tower names.</p>
+        <p><b>Boosts:</b> Luck boosts Mythic, Secret, and Cheeter towers. Secret Upgrade boosts Secret and Cheeter towers. Speed only makes rolls faster.</p>
       </div>
     </div>
   </div>
@@ -983,14 +989,6 @@
         bestItem = data.bestItem || "None";
         bestChance = data.bestChance || 0;
         inventory = data.inventory || {};
-if (inventory["Trix"]) {
-  inventory["MinhTri"] = (inventory["MinhTri"] || 0) + inventory["Trix"];
-  delete inventory["Trix"];
-}
-
-if (bestItem === "Trix") {
-  bestItem = "MinhTri";
-}
         achievements = data.achievements || {};
         cheetCoins = data.cheetCoins || 0;
         upgrades = data.upgrades || { luck: 0, speed: 0, secret: 0 };
