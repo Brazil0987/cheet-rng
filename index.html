@@ -1104,9 +1104,16 @@
       if (type === "luck") return "🍀 DIMIS Luck Blessing";
       if (type === "coins") return "💰 DIMIS Coin Blessing";
       if (type === "speed") return "⚡ DIMIS Speed Blessing";
-      if (type === "gift") return "🎁 DIMIS Gift";
       if (type === "miracle") return "🌌 DIMIS Miracle";
       return "No active blessing";
+    }
+
+    function getBlessingDescription(type) {
+      if (type === "luck") return "Mythic, Secret, and Cheeter towers get 1.2x weight for 10 minutes.";
+      if (type === "coins") return "You earn extra Cheet Coins from rolls for 10 minutes.";
+      if (type === "speed") return "Your roll animation is faster for 10 minutes.";
+      if (type === "miracle") return "Secret and Cheeter towers get 1.35x weight for 10 minutes.";
+      return "";
     }
 
     function getBlessingTimeLeftText() {
@@ -1241,21 +1248,15 @@
 
       if (dimisWorshipPoints >= 100) {
         dimisWorshipPoints = 0;
-        let blessings = ["luck", "coins", "speed", "gift", "miracle"];
+        let blessings = ["luck", "coins", "speed", "miracle"];
         let chosen = blessings[Math.floor(Math.random() * blessings.length)];
 
-        if (chosen === "gift") {
-          let giftCoins = 1000 + Math.floor(Math.random() * 2001);
-          cheetCoins += giftCoins;
-          activeBlessing = { type: "none", until: 0 };
-          message = "🎁 DIMIS Gift! You got +" + giftCoins + " Cheet Coins.";
-        } else {
-          activeBlessing = {
-            type: chosen,
-            until: Date.now() + 10 * 60 * 1000
-          };
-          message = formatBlessingName(chosen) + " activated for 10 minutes!";
-        }
+        activeBlessing = {
+          type: chosen,
+          until: Date.now() + 10 * 60 * 1000
+        };
+
+        message = formatBlessingName(chosen) + " activated for 10 minutes!\n\n" + getBlessingDescription(chosen);
 
         unlockAchievement("dimisBlessing");
       }
