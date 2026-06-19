@@ -606,10 +606,82 @@
       50% { transform: scale(1.08); color: #00ff66; }
       100% { transform: scale(1); color: white; }
     }
+  
+    #achievementPopup {
+      display: none;
+      position: fixed;
+      z-index: 999997;
+      right: 22px;
+      top: 22px;
+      width: 330px;
+      max-width: calc(100vw - 44px);
+      border: 3px solid gold;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #120b00, #101010, #06200a);
+      box-shadow: 0 0 24px gold, 0 0 32px #49ff5a;
+      color: white;
+      padding: 16px;
+      text-align: left;
+      cursor: pointer;
+      animation: achievementSlideIn 0.35s ease-out;
+    }
+
+    #achievementPopup.show {
+      display: block;
+    }
+
+    .achievement-popup-title {
+      color: gold;
+      font-size: 20px;
+      font-weight: bold;
+      text-shadow: 0 0 10px gold;
+      margin-bottom: 8px;
+    }
+
+    .achievement-popup-name {
+      color: #49ff5a;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 8px #49ff5a;
+      margin-bottom: 6px;
+    }
+
+    .achievement-popup-desc {
+      color: #ddd;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .achievement-popup-reward {
+      color: gold;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    @keyframes achievementSlideIn {
+      from {
+        transform: translateX(120%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
   </style>
 </head>
 
 <body>
+
+
+  <div id="achievementPopup" onclick="hideAchievementPopup()">
+    <div class="achievement-popup-title">🏆 Achievement Unlocked!</div>
+    <div class="achievement-popup-name" id="achievementPopupName">Achievement</div>
+    <div class="achievement-popup-desc" id="achievementPopupDesc">Description</div>
+    <div class="achievement-popup-reward" id="achievementPopupReward">+0 Cheet Coins</div>
+    <div class="small-note">Click to close</div>
+  </div>
 
 
   <div id="afkCatchupPopup" onclick="hideAfkCatchupPopup()">
@@ -1086,17 +1158,61 @@
       return rewards[id] || 100;
     }
 
+
+    let achievementPopupTimeout = null;
+
+    function getAchievementInfo(id) {
+      for (let achievement of achievementList) {
+        if (achievement.id === id) {
+          return achievement;
+        }
+      }
+
+      return {
+        name: id,
+        description: "Achievement completed"
+      };
+    }
+
+    function showAchievementPopup(id, bonus) {
+      let popup = document.getElementById("achievementPopup");
+      if (!popup) return;
+
+      let achievement = getAchievementInfo(id);
+
+      document.getElementById("achievementPopupName").textContent = achievement.name;
+      document.getElementById("achievementPopupDesc").textContent = achievement.description;
+      document.getElementById("achievementPopupReward").textContent = "+" + bonus + " Cheet Coins";
+
+      popup.classList.add("show");
+
+      if (achievementPopupTimeout) {
+        clearTimeout(achievementPopupTimeout);
+      }
+
+      achievementPopupTimeout = setTimeout(function() {
+        hideAchievementPopup();
+      }, 5000);
+    }
+
+    function hideAchievementPopup() {
+      let popup = document.getElementById("achievementPopup");
+      if (!popup) return;
+
+      popup.classList.remove("show");
+
+      if (achievementPopupTimeout) {
+        clearTimeout(achievementPopupTimeout);
+        achievementPopupTimeout = null;
+      }
+    }
+
     function unlockAchievement(id) {
       if (!achievements[id]) {
         achievements[id] = true;
         let bonus = getAchievementReward(id);
         cheetCoins += bonus;
-        showRarityAnnouncement({
-          name: "Achievement Bonus",
-          chance: 1000,
-          rarity: "secret",
-          bonusText: "+" + bonus + " Cheet Coins"
-        });
+        showAchievementPopup(id, bonus);
       }
     }
 
@@ -2220,6 +2336,7 @@ let sortedItems = [...items].sort(function(a, b) {
     window.worshipDimis = worshipDimis;
     window.closePookowskiAnimation = closePookowskiAnimation;
     window.hideAfkCatchupPopup = hideAfkCatchupPopup;
+    window.hideAchievementPopup = hideAchievementPopup;
 
     updateTowers();
     updateAchievements();
