@@ -1122,7 +1122,7 @@
       let multiplier = 1 + upgrades.coin * 0.25;
 
       if (getActiveBlessingType() === "coins") {
-        multiplier *= 2;
+        multiplier *= 4;
       }
 
       return multiplier;
@@ -1257,10 +1257,10 @@
     }
 
     function getBlessingDescription(type) {
-      if (type === "luck") return "Mythic, Secret, and Cheeter towers get 1.2x weight for 10 minutes.";
-      if (type === "coins") return "You earn extra Cheet Coins from rolls for 10 minutes.";
-      if (type === "speed") return "Your roll animation is faster for 10 minutes.";
-      if (type === "miracle") return "Secret and Cheeter towers get 1.35x weight for 10 minutes.";
+      if (type === "luck") return "Mythic, Secret, and Cheeter towers get 1.2x weight for 15 minutes.";
+      if (type === "coins") return "You earn 4x Cheet Coins from rolls for 15 minutes.";
+      if (type === "speed") return "Your roll animation is faster for 15 minutes.";
+      if (type === "miracle") return "Secret and Cheeter towers get 1.35x weight for 15 minutes.";
       return "";
     }
 
@@ -1286,13 +1286,9 @@
     }
 
     function getWorshipCost() {
-      let upgradeCost = getTotalUpgradeLevels() * 150;
-      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 6);
+      let upgradeCost = getTotalUpgradeLevels() * 35;
+      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 30);
       let cost = 250 + upgradeCost + earnedCost;
-
-      if (cost > 250000) {
-        cost = 250000;
-      }
 
       return cost;
     }
@@ -1419,10 +1415,10 @@
 
         activeBlessing = {
           type: chosen,
-          until: Date.now() + 10 * 60 * 1000
+          until: Date.now() + 15 * 60 * 1000
         };
 
-        message = formatBlessingName(chosen) + " activated for 10 minutes!\n\n" + getBlessingDescription(chosen);
+        message = formatBlessingName(chosen) + " activated for 15 minutes!\n\n" + getBlessingDescription(chosen);
 
         unlockAchievement("dimisBlessing");
       }
