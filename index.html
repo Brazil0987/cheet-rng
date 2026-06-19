@@ -567,7 +567,7 @@
 <body>
 
 
-  <div id="afkCatchupPopup">
+  <div id="afkCatchupPopup" onclick="hideAfkCatchupPopup()">
     <div class="afk-box">
       <h2>Auto Roll Caught Up!</h2>
       <p id="afkCatchupText">+0 rolls while AFK</p>
@@ -905,6 +905,20 @@
     }
 
 
+    let afkPopupTimeout = null;
+
+    function hideAfkCatchupPopup() {
+      let popup = document.getElementById("afkCatchupPopup");
+      if (!popup) return;
+
+      popup.classList.remove("show");
+
+      if (afkPopupTimeout) {
+        clearTimeout(afkPopupTimeout);
+        afkPopupTimeout = null;
+      }
+    }
+
     function showAfkCatchupPopup(missedRolls, coinsEarned) {
       let popup = document.getElementById("afkCatchupPopup");
       let text = document.getElementById("afkCatchupText");
@@ -914,8 +928,12 @@
       text.textContent = "+" + missedRolls + " rolls while AFK • +" + coinsEarned + " coins";
       popup.classList.add("show");
 
-      setTimeout(function() {
-        popup.classList.remove("show");
+      if (afkPopupTimeout) {
+        clearTimeout(afkPopupTimeout);
+      }
+
+      afkPopupTimeout = setTimeout(function() {
+        hideAfkCatchupPopup();
       }, 4000);
     }
 
@@ -1936,6 +1954,7 @@ let sortedItems = [...items].sort(function(a, b) {
     window.buyUpgrade = buyUpgrade;
     window.claimHutReward = claimHutReward;
     window.closePookowskiAnimation = closePookowskiAnimation;
+    window.hideAfkCatchupPopup = hideAfkCatchupPopup;
 
     updateTowers();
     updateAchievements();
