@@ -990,6 +990,7 @@
     let autoRollEnabled = false;
     let autoRollSaved = false;
     let autoRollSessionId = "";
+    let afkSaveInterval = null;
     let leaderboardData = {};
     let lastAutoRollTime = Date.now();
 
@@ -1956,6 +1957,28 @@
       }
     }
 
+
+    function startAfkSaveLoop() {
+      if (afkSaveInterval) {
+        clearInterval(afkSaveInterval);
+      }
+
+      afkSaveInterval = setInterval(function() {
+        if (autoRollEnabled && currentUser && hasUsername()) {
+          saveAfkTimerNow().catch(function(error) {
+            console.log("AFK timer save failed:", error);
+          });
+        }
+      }, 15000);
+    }
+
+    function stopAfkSaveLoop() {
+      if (afkSaveInterval) {
+        clearInterval(afkSaveInterval);
+        afkSaveInterval = null;
+      }
+    }
+
     async function startAutoRoll() {
       if (!currentUser) {
         alert("Sign in first!");
@@ -1983,12 +2006,15 @@
         console.log("Auto-roll save failed:", error);
       });
 
+      startAfkSaveLoop();
+
       if (!isRolling) {
         rollItem();
       }
     }
 
     function stopAutoRoll() {
+      stopAfkSaveLoop();
       autoRollEnabled = false;
       autoRollSaved = false;
       autoRollSessionId = "";
@@ -2122,6 +2148,7 @@
       setTimeout(function() {
         if (wasAutoRolling && currentUser && hasUsername()) {
           autoRollEnabled = true;
+          startAfkSaveLoop();
 
           if (!isRolling) {
             rollItem();
@@ -2144,6 +2171,21 @@
       saveAfkTimerNow().catch(function(error) {
         console.log("AFK timer save failed:", error);
       });
+    });
+
+
+    window.addEventListener("focus", function() {
+      catchUpAutoRolls().catch(function(error) {
+        console.log("Focus catch-up failed:", error);
+      });
+    });
+
+    window.addEventListener("pagehide", function() {
+      // Closing/reloading the tab disables saved AFK.
+      // Browser sleep normally keeps the same tab session, so catch-up can still work.
+      if (currentUser && hasUsername()) {
+        stopAutoRoll();
+      }
     });
 
     window.addEventListener("beforeunload", function() {
