@@ -1286,9 +1286,9 @@
     }
 
     function getWorshipCost() {
-      let upgradeCost = getTotalUpgradeLevels() * 12;
-      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 100);
-      let cost = 100 + upgradeCost + earnedCost;
+      let upgradeCost = getTotalUpgradeLevels() * 8;
+      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 150);
+      let cost = 75 + upgradeCost + earnedCost;
 
       return cost;
     }
