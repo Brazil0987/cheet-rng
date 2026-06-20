@@ -1733,25 +1733,25 @@
 
     function getCoinReward(item) {
       let rarityCoins = {
-        common: 3,
-        rare: 6,
-        epic: 12,
-        legendary: 25,
-        mythic: 60,
-        secret: 200,
-        cheeter: 5000
+        common: 6,
+        rare: 12,
+        epic: 25,
+        legendary: 50,
+        mythic: 120,
+        secret: 400,
+        cheeter: 10000
       };
 
       let baseCoins = rarityCoins[item.rarity] || 3;
-      let chanceBonus = Math.floor(Math.sqrt(item.chance) / 1.5);
+      let chanceBonus = Math.floor(Math.sqrt(item.chance) / 1);
       let reward = baseCoins + chanceBonus;
 
       if (item.rarity === "cheeter") {
-        reward += 15000;
+        reward += 30000;
       }
 
-      if (reward < 3) {
-        reward = 3;
+      if (reward < 6) {
+        reward = 6;
       }
 
       reward = Math.floor(reward * getCoinMultiplier());
