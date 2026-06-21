@@ -776,6 +776,7 @@
           <h3>🍀 Luck Boost</h3>
           <p>Level: <span id="luckLevel">0</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
+          <p>Current multiplier: <span id="luckMultiplierText">1.00x</span></p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
           <button onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
@@ -784,6 +785,7 @@
           <h3>⚡ Faster Rolls</h3>
           <p>Level: <span id="speedLevel">0</span></p>
           <p>Makes the roll animation faster.</p>
+          <p>Current speed: <span id="speedMultiplierText">1.00x</span></p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
@@ -792,6 +794,8 @@
           <h3>🕵️ Secret Upgrade</h3>
           <p>Level: <span id="secretLevel">0</span></p>
           <p>Boosts secret and cheeter tier odds.</p>
+          <p>Secret multiplier: <span id="secretMultiplierText">1.00x</span></p>
+          <p>Cheeter multiplier: <span id="cheeterMultiplierText">1.00x</span></p>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
           <button onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
@@ -824,6 +828,13 @@
           <p>Worship Points: <span id="worshipPointsText">0</span>/100</p>
           <button onclick="worshipDimis()">Worship DIMIS</button>
           <div class="blessing-box" id="activeBlessingText">No active blessing</div>
+
+          <div class="blessing-box">
+            <div>🍀 Luck Blessing: 1.20x Mythic / Secret / Cheeter luck</div>
+            <div>💰 Coin Blessing: 4.00x Cheet Coins</div>
+            <div>⚡ Speed Blessing: 1.25x roll speed</div>
+            <div>🌌 Miracle: 1.35x Secret / Cheeter luck</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1130,6 +1141,32 @@
       return multiplier;
     }
 
+    function getLuckMultiplier() {
+      return 1 + upgrades.luck * 0.04;
+    }
+
+    function getSecretMultiplier() {
+      return 1 + upgrades.secret * 0.12;
+    }
+
+    function getCheeterSecretMultiplier() {
+      return 1 + upgrades.secret * 0.15;
+    }
+
+    function getSpeedDisplayMultiplier() {
+      let speedMultiplier = 1 - upgrades.speed * 0.06;
+
+      if (getActiveBlessingType() === "speed") {
+        speedMultiplier *= 0.8;
+      }
+
+      if (speedMultiplier < 0.45) {
+        speedMultiplier = 0.45;
+      }
+
+      return 1 / speedMultiplier;
+    }
+
     function getDailyRewardAmount() {
       let streakBonus = Math.min(Math.max(hutStreak - 1, 0), 6) * 250;
       return 500 + streakBonus;
@@ -1266,13 +1303,21 @@
       return "";
     }
 
+    function getBlessingMultiplierText(type) {
+      if (type === "luck") return "1.20x Mythic / Secret / Cheeter luck";
+      if (type === "coins") return "4.00x Cheet Coins";
+      if (type === "speed") return "1.25x roll speed";
+      if (type === "miracle") return "1.35x Secret / Cheeter luck";
+      return "";
+    }
+
     function getBlessingTimeLeftText() {
       let type = getActiveBlessingType();
       if (type === "none") return "No active blessing";
 
       let msLeft = activeBlessing.until - Date.now();
       let minutes = Math.max(1, Math.ceil(msLeft / 60000));
-      return formatBlessingName(type) + " • about " + minutes + " minute(s) left";
+      return formatBlessingName(type) + " • " + getBlessingMultiplierText(type) + " • about " + minutes + " minute(s) left";
     }
 
     function getUpgradeCost(type) {
@@ -1310,6 +1355,11 @@
       document.getElementById("speedCost").textContent = getUpgradeCost("speed");
       document.getElementById("secretCost").textContent = getUpgradeCost("secret");
       document.getElementById("coinCost").textContent = getUpgradeCost("coin");
+
+      document.getElementById("luckMultiplierText").textContent = getLuckMultiplier().toFixed(2) + "x";
+      document.getElementById("speedMultiplierText").textContent = getSpeedDisplayMultiplier().toFixed(2) + "x";
+      document.getElementById("secretMultiplierText").textContent = getSecretMultiplier().toFixed(2) + "x";
+      document.getElementById("cheeterMultiplierText").textContent = getCheeterSecretMultiplier().toFixed(2) + "x";
       document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
 
       document.getElementById("hutStreakCount").textContent = hutStreak;
@@ -1420,7 +1470,7 @@
           until: Date.now() + 15 * 60 * 1000
         };
 
-        message = formatBlessingName(chosen) + " activated for 15 minutes!\n\n" + getBlessingDescription(chosen);
+        message = formatBlessingName(chosen) + " activated for 15 minutes!\n\nMultiplier: " + getBlessingMultiplierText(chosen) + "\n\n" + getBlessingDescription(chosen);
 
         unlockAchievement("dimisBlessing");
       }
