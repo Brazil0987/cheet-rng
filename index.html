@@ -776,7 +776,8 @@
           <h3>🍀 Luck Boost</h3>
           <p>Level: <span id="luckLevel">0</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
-          <p>Current multiplier: <span id="luckMultiplierText">1.00x</span></p>
+          <p>Current Mythic multiplier: <span id="luckMultiplierText">1.00x</span></p>
+          <p class="small-note">With DIMIS Luck: <span id="luckWithDimisText">1.20x</span></p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
           <button onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
@@ -795,8 +796,10 @@
           <h3>🕵️ Secret Upgrade</h3>
           <p>Level: <span id="secretLevel">0</span></p>
           <p>Boosts secret and cheeter tier odds.</p>
-          <p>Secret multiplier: <span id="secretMultiplierText">1.00x</span></p>
-          <p>Cheeter multiplier: <span id="cheeterMultiplierText">1.00x</span></p>
+          <p>Secret total multiplier: <span id="secretMultiplierText">1.00x</span></p>
+          <p>Cheeter total multiplier: <span id="cheeterMultiplierText">1.00x</span></p>
+          <p class="small-note">With DIMIS Luck: Secret <span id="secretWithDimisLuckText">1.20x</span> • Cheeter <span id="cheeterWithDimisLuckText">1.20x</span></p>
+          <p class="small-note">With DIMIS Miracle: Secret <span id="secretWithDimisMiracleText">1.35x</span> • Cheeter <span id="cheeterWithDimisMiracleText">1.35x</span></p>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
           <button onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
@@ -831,10 +834,10 @@
           <div class="blessing-box" id="activeBlessingText">No active blessing</div>
 
           <div class="blessing-box">
-            <div>🍀 Luck Blessing: 1.20x Mythic / Secret / Cheeter luck</div>
+            <div>🍀 Luck Blessing: 1.20x on top of your Luck / Secret upgrades</div>
             <div>💰 Coin Blessing: 4.00x Cheet Coins</div>
-            <div>⚡ Speed Blessing: 1.25x roll speed</div>
-            <div>🌌 Miracle: 1.35x Secret / Cheeter luck</div>
+            <div>⚡ Speed Blessing: boosts speed up to the 3.33x max</div>
+            <div>🌌 Miracle: 1.35x on top of your Secret / Cheeter upgrades</div>
           </div>
         </div>
       </div>
@@ -1148,11 +1151,11 @@
     }
 
     function getSecretMultiplier() {
-      return 1 + upgrades.secret * 0.12;
+      return 1 + upgrades.luck * 0.04 + upgrades.secret * 0.12;
     }
 
     function getCheeterSecretMultiplier() {
-      return 1 + upgrades.secret * 0.15;
+      return 1 + upgrades.luck * 0.04 + upgrades.secret * 0.15;
     }
 
     function getSpeedDisplayMultiplier() {
@@ -1306,10 +1309,10 @@
     }
 
     function getBlessingMultiplierText(type) {
-      if (type === "luck") return "1.20x Mythic / Secret / Cheeter luck";
+      if (type === "luck") return "1.20x on top of Luck / Secret upgrades";
       if (type === "coins") return "4.00x Cheet Coins";
-      if (type === "speed") return "1.25x roll speed";
-      if (type === "miracle") return "1.35x Secret / Cheeter luck";
+      if (type === "speed") return "boosts speed up to the 3.33x max";
+      if (type === "miracle") return "1.35x on top of Secret / Cheeter upgrades";
       return "";
     }
 
@@ -1380,9 +1383,17 @@
       document.getElementById("coinCost").textContent = getUpgradeCost("coin");
 
       document.getElementById("luckMultiplierText").textContent = getLuckMultiplier().toFixed(2) + "x";
+      document.getElementById("luckWithDimisText").textContent = (getLuckMultiplier() * 1.2).toFixed(2) + "x";
+
       document.getElementById("speedMultiplierText").textContent = getSpeedDisplayMultiplier().toFixed(2) + "x";
+
       document.getElementById("secretMultiplierText").textContent = getSecretMultiplier().toFixed(2) + "x";
       document.getElementById("cheeterMultiplierText").textContent = getCheeterSecretMultiplier().toFixed(2) + "x";
+      document.getElementById("secretWithDimisLuckText").textContent = (getSecretMultiplier() * 1.2).toFixed(2) + "x";
+      document.getElementById("cheeterWithDimisLuckText").textContent = (getCheeterSecretMultiplier() * 1.2).toFixed(2) + "x";
+      document.getElementById("secretWithDimisMiracleText").textContent = (getSecretMultiplier() * 1.35).toFixed(2) + "x";
+      document.getElementById("cheeterWithDimisMiracleText").textContent = (getCheeterSecretMultiplier() * 1.35).toFixed(2) + "x";
+
       document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
 
       document.getElementById("hutStreakCount").textContent = hutStreak;
