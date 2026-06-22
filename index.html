@@ -1022,7 +1022,7 @@
     let hutStreak = 0;
     let dimisWorshipPoints = 0;
     let activeBlessing = { type: "none", until: 0 };
-    const MAX_SPEED_LEVEL = 12;
+    const MAX_SPEED_LEVEL = 20;
 
     function escapeHtml(text) {
       return String(text)
@@ -1156,7 +1156,7 @@
     }
 
     function getSpeedDisplayMultiplier() {
-      let speedMultiplier = 1 - upgrades.speed * 0.06;
+      let speedMultiplier = 1 - upgrades.speed * 0.035;
 
       if (getActiveBlessingType() === "speed") {
         speedMultiplier *= 0.8;
@@ -1922,7 +1922,7 @@
         240, 275, 315, 360, 410, 470, 540, 620
       ];
 
-      let speedMultiplier = 1 - upgrades.speed * 0.06;
+      let speedMultiplier = 1 - upgrades.speed * 0.035;
 
       if (getActiveBlessingType() === "speed") {
         speedMultiplier *= 0.8;
