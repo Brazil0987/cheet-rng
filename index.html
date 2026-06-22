@@ -786,8 +786,9 @@
           <p>Level: <span id="speedLevel">0</span></p>
           <p>Makes the roll animation faster.</p>
           <p>Current speed: <span id="speedMultiplierText">1.00x</span></p>
+          <p class="small-note">Max speed: 3.33x</p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
-          <button onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
+          <button id="speedUpgradeButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
 
         <div class="shop-card">
@@ -1021,6 +1022,7 @@
     let hutStreak = 0;
     let dimisWorshipPoints = 0;
     let activeBlessing = { type: "none", until: 0 };
+    const MAX_SPEED_LEVEL = 12;
 
     function escapeHtml(text) {
       return String(text)
@@ -1160,8 +1162,8 @@
         speedMultiplier *= 0.8;
       }
 
-      if (speedMultiplier < 0.45) {
-        speedMultiplier = 0.45;
+      if (speedMultiplier < 0.30) {
+        speedMultiplier = 0.30;
       }
 
       return 1 / speedMultiplier;
@@ -1320,9 +1322,20 @@
       return formatBlessingName(type) + " • " + getBlessingMultiplierText(type) + " • about " + minutes + " minute(s) left";
     }
 
+    function isUpgradeMaxed(type) {
+      if (type === "speed") {
+        return upgrades.speed >= MAX_SPEED_LEVEL;
+      }
+
+      return false;
+    }
+
     function getUpgradeCost(type) {
       if (type === "luck") return 500 + upgrades.luck * 500;
-      if (type === "speed") return 750 + upgrades.speed * 750;
+      if (type === "speed") {
+        if (isUpgradeMaxed("speed")) return 0;
+        return 750 + upgrades.speed * 750;
+      }
       if (type === "secret") return 2500 + upgrades.secret * 2500;
       if (type === "coin") return 1000 + upgrades.coin * 1200;
       return 999999;
@@ -1352,7 +1365,17 @@
       document.getElementById("coinLevel").textContent = upgrades.coin;
 
       document.getElementById("luckCost").textContent = getUpgradeCost("luck");
-      document.getElementById("speedCost").textContent = getUpgradeCost("speed");
+
+      if (isUpgradeMaxed("speed")) {
+        document.getElementById("speedCost").textContent = "MAX";
+        document.getElementById("speedUpgradeButton").disabled = true;
+        document.getElementById("speedUpgradeButton").textContent = "Max Speed Reached";
+      } else {
+        document.getElementById("speedCost").textContent = getUpgradeCost("speed");
+        document.getElementById("speedUpgradeButton").disabled = false;
+        document.getElementById("speedUpgradeButton").textContent = "Buy Faster Rolls";
+      }
+
       document.getElementById("secretCost").textContent = getUpgradeCost("secret");
       document.getElementById("coinCost").textContent = getUpgradeCost("coin");
 
@@ -1388,6 +1411,11 @@
     async function buyUpgrade(type) {
       if (!currentUser || !hasUsername()) {
         alert("Sign in and choose a username first!");
+        return;
+      }
+
+      if (isUpgradeMaxed(type)) {
+        alert("This upgrade is already maxed!");
         return;
       }
 
@@ -1900,8 +1928,8 @@
         speedMultiplier *= 0.8;
       }
 
-      if (speedMultiplier < 0.45) {
-        speedMultiplier = 0.45;
+      if (speedMultiplier < 0.30) {
+        speedMultiplier = 0.30;
       }
 
       return delays.map(function(delay) {
