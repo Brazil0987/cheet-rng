@@ -786,7 +786,7 @@
           <p>Level: <span id="speedLevel">0</span></p>
           <p>Makes the roll animation faster.</p>
           <p>Current speed: <span id="speedMultiplierText">1.00x</span></p>
-          <p class="small-note">Max speed: 3.33x</p>
+          <p class="small-note">Max upgrade speed: 2.67x • 3.33x with DIMIS Speed Blessing</p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedUpgradeButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
@@ -1156,7 +1156,7 @@
     }
 
     function getSpeedDisplayMultiplier() {
-      let speedMultiplier = 1 - upgrades.speed * 0.035;
+      let speedMultiplier = 1 - upgrades.speed * 0.03125;
 
       if (getActiveBlessingType() === "speed") {
         speedMultiplier *= 0.8;
@@ -1922,7 +1922,7 @@
         240, 275, 315, 360, 410, 470, 540, 620
       ];
 
-      let speedMultiplier = 1 - upgrades.speed * 0.035;
+      let speedMultiplier = 1 - upgrades.speed * 0.03125;
 
       if (getActiveBlessingType() === "speed") {
         speedMultiplier *= 0.8;
