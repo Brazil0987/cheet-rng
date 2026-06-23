@@ -788,7 +788,8 @@
           <h3>🍀 Luck Boost</h3>
           <p>Level: <span id="luckLevel">0</span>/<span id="luckMax">100</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
-          <p class="upgrade-explain"><b>Exact effect:</b> +4% roll weight per level for Mythic, Secret, and Cheeter towers. Example: level 10 = +40% weight for those high rarities. Max level is 100.</p>
+          <p>Current multiplier: <span id="luckMultiplierText">1.00x</span></p>
+          <p class="upgrade-explain"><b>Exact effect:</b> +4% roll weight per level for Mythic, Secret, and Cheeter towers. Current multiplier above shows this as 1.00x, 1.04x, 1.08x, etc. Max level is 100.</p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
           <button id="luckBuyButton" onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
@@ -797,7 +798,8 @@
           <h3>⚡ Faster Rolls</h3>
           <p>Level: <span id="speedLevel">0</span>/<span id="speedMax">20</span></p>
           <p>Makes the roll animation faster.</p>
-          <p class="upgrade-explain"><b>Exact effect:</b> each level makes roll delays 6% shorter. The speed multiplier cannot go below 45%, so rolls cannot become too broken. Max level is 20.</p>
+          <p>Current speed: <span id="speedMultiplierText">1.00x</span></p>
+          <p class="upgrade-explain"><b>Exact effect:</b> each level makes roll delays 6% shorter. Current speed above shows how much faster your rolls are. The delay cannot go below 45%. Max level is 20.</p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedBuyButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
@@ -806,7 +808,8 @@
           <h3>🕵️ Secret Upgrade</h3>
           <p>Level: <span id="secretLevel">0</span>/<span id="secretMax">100</span></p>
           <p>Boosts secret and cheeter tier odds.</p>
-          <p class="upgrade-explain"><b>Exact effect:</b> +12% roll weight per level for Secret towers and +15% roll weight per level for Cheeter towers. It stacks with Luck Boost. Max level is 100.</p>
+          <p>Current multiplier: <span id="secretMultiplierText">1.00x / 1.00x</span></p>
+          <p class="upgrade-explain"><b>Exact effect:</b> +12% roll weight per level for Secret towers and +15% roll weight per level for Cheeter towers. Current multiplier above shows both Secret and Cheeter boosts. It stacks with Luck Boost. Max level is 100.</p>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
           <button id="secretBuyButton" onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
@@ -1264,6 +1267,28 @@
       return 999999;
     }
 
+    function getLuckUpgradeMultiplier() {
+      return 1 + upgrades.luck * 0.04;
+    }
+
+    function getSecretUpgradeMultiplier() {
+      return 1 + upgrades.secret * 0.12;
+    }
+
+    function getCheeterSecretUpgradeMultiplier() {
+      return 1 + upgrades.secret * 0.15;
+    }
+
+    function getSpeedDisplayMultiplier() {
+      let speedMultiplier = 1 - upgrades.speed * 0.06;
+
+      if (speedMultiplier < 0.45) {
+        speedMultiplier = 0.45;
+      }
+
+      return 1 / speedMultiplier;
+    }
+
     function updateCoinsAndShop() {
       clampUpgrades();
 
@@ -1307,6 +1332,20 @@
       updateUpgradeButton("coin", "Buy Coin Multiplier");
 
       document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
+
+      if (document.getElementById("luckMultiplierText")) {
+        document.getElementById("luckMultiplierText").textContent = getLuckUpgradeMultiplier().toFixed(2) + "x";
+      }
+
+      if (document.getElementById("speedMultiplierText")) {
+        document.getElementById("speedMultiplierText").textContent = getSpeedDisplayMultiplier().toFixed(2) + "x faster";
+      }
+
+      if (document.getElementById("secretMultiplierText")) {
+        document.getElementById("secretMultiplierText").textContent =
+          getSecretUpgradeMultiplier().toFixed(2) + "x Secret / " +
+          getCheeterSecretUpgradeMultiplier().toFixed(2) + "x Cheeter";
+      }
 
       document.getElementById("hutStreakCount").textContent = hutStreak;
       document.getElementById("dailyRewardAmount").textContent = getDailyRewardAmount();
