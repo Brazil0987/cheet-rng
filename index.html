@@ -885,7 +885,7 @@
           <div class="upgrade-stat-list">
             <div>Each level: +0.04x speed</div>
             <div>Current speed: <span id="speedMultiplierText">1.00x speed</span></div>
-            <div>With DIMIS Speed: <span id="speedWithDimisText">1.25x speed</span></div>
+            <div>With DIMIS Speed: <span id="speedWithDimisText">3.33x speed max</span></div>
           </div>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedUpgradeButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
@@ -1293,7 +1293,13 @@
     }
 
     function getSpeedWithDimisText() {
-      return (getSpeedMultiplier() * 1.25).toFixed(2) + "x speed";
+      let multiplier = getSpeedMultiplier() * 1.25;
+
+      if (multiplier > 3.33) {
+        multiplier = 3.33;
+      }
+
+      return multiplier.toFixed(2) + "x speed";
     }
 
     function getDailyRewardAmount() {
