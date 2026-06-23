@@ -661,6 +661,35 @@
       display: block;
     }
 
+  
+    .reward-explain {
+      color: #cfcfcf;
+      font-size: 13px;
+      line-height: 1.35;
+      margin: 6px 0;
+      padding: 6px 8px;
+      background: #05050588;
+      border-radius: 8px;
+      border: 1px solid #ffffff18;
+    }
+
+    .dimis-reward-list {
+      text-align: left;
+      color: #ddd;
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 8px auto;
+      max-width: 290px;
+      background: #05050599;
+      border: 1px solid #49ff5a55;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .dimis-reward-list b {
+      color: #49ff5a;
+    }
+
   </style>
 </head>
 
@@ -756,7 +785,7 @@
           <h3>🍀 Luck Boost</h3>
           <p>Level: <span id="luckLevel">0</span>/<span id="luckMax">100</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
-          <p class="upgrade-explain">Each level makes rare high-tier towers easier to hit. Max level is 100.</p>
+          <p class="upgrade-explain"><b>What it does:</b> increases your odds for Mythic, Secret, and Cheeter towers. It does not make common towers better; it helps the high rarity rolls show up more often. Max level is 100.</p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
           <button id="luckBuyButton" onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
@@ -765,7 +794,7 @@
           <h3>⚡ Faster Rolls</h3>
           <p>Level: <span id="speedLevel">0</span>/<span id="speedMax">20</span></p>
           <p>Makes the roll animation faster.</p>
-          <p class="upgrade-explain">Each level shortens the roll animation. This upgrade caps at level 20 so rolling does not break.</p>
+          <p class="upgrade-explain"><b>What it does:</b> makes each roll animation finish faster, so Auto Roll and manual rolling feel quicker. It does not change rarity odds. Max level is 20.</p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedBuyButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
@@ -774,7 +803,7 @@
           <h3>🕵️ Secret Upgrade</h3>
           <p>Level: <span id="secretLevel">0</span>/<span id="secretMax">100</span></p>
           <p>Boosts secret and cheeter tier odds.</p>
-          <p class="upgrade-explain">This is a stronger bonus for the rarest towers. Max level is 100.</p>
+          <p class="upgrade-explain"><b>What it does:</b> gives an extra boost only to Secret and Cheeter-tier towers. It stacks with Luck Boost for the rarest finds. Max level is 100.</p>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
           <button id="secretBuyButton" onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
@@ -783,7 +812,7 @@
           <h3>💰 Coin Multiplier</h3>
           <p>Level: <span id="coinLevel">0</span>/<span id="coinMax">100</span></p>
           <p>Gives more Cheet Coins from every roll.</p>
-          <p class="upgrade-explain">Each level increases coin rewards. Max level is 100.</p>
+          <p class="upgrade-explain"><b>What it does:</b> increases how many Cheet Coins you earn from rolls and rewards. Higher levels make farming coins much faster. Max level is 100.</p>
           <p>Current multiplier: <span id="coinMultiplierText">1x</span></p>
           <p>Cost: <span id="coinCost">1000</span> coins</p>
           <button id="coinBuyButton" onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
@@ -795,6 +824,7 @@
           <p>Streak: <span id="hutStreakCount">0</span> day(s)</p>
           <p>Reward: <span id="dailyRewardAmount">500</span> coins</p>
           <button id="rewardButton" onclick="claimHutReward()">Claim Reward</button>
+          <p class="reward-explain"><b>What it does:</b> gives free Cheet Coins every 24 hours. Keeping your streak raises the daily reward.</p>
           <p class="small-note" id="rewardStatus">Ready?</p>
         </div>
 
@@ -802,7 +832,14 @@
           <h3>🙏 DIMIS Worship</h3>
           <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
-          <p class="upgrade-explain">Each worship gives +10 points. The price uses the older gentle scaling: small increases from upgrade levels and coins. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
+          <p class="upgrade-explain"><b>What it does:</b> spending coins gives +10 Worship Points. At 100 points, DIMIS gives one random reward, then the meter resets.</p>
+          <div class="dimis-reward-list">
+            <div><b>🍀 Luck Blessing:</b> temporarily boosts Mythic, Secret, and Cheeter odds.</div>
+            <div><b>💰 Coin Blessing:</b> temporarily doubles coin rewards.</div>
+            <div><b>⚡ Speed Blessing:</b> temporarily makes rolls faster.</div>
+            <div><b>🎁 DIMIS Gift:</b> instantly gives bonus Cheet Coins.</div>
+            <div><b>🌌 DIMIS Miracle:</b> gives a special rare blessing effect.</div>
+          </div>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
           <div class="worship-meter"><div id="worshipFill" class="worship-fill"></div></div>
           <p>Worship Points: <span id="worshipPointsText">0</span>/100</p>
@@ -1170,13 +1207,22 @@
       return "No active blessing";
     }
 
+    function getBlessingDescription(type) {
+      if (type === "luck") return "Boosts Mythic, Secret, and Cheeter odds.";
+      if (type === "coins") return "Doubles Cheet Coin rewards.";
+      if (type === "speed") return "Makes rolls faster while active.";
+      if (type === "miracle") return "Special rare blessing effect from DIMIS.";
+      if (type === "gift") return "Instant Cheet Coin reward.";
+      return "";
+    }
+
     function getBlessingTimeLeftText() {
       let type = getActiveBlessingType();
       if (type === "none") return "No active blessing";
 
       let msLeft = activeBlessing.until - Date.now();
       let minutes = Math.max(1, Math.ceil(msLeft / 60000));
-      return formatBlessingName(type) + " • about " + minutes + " minute(s) left";
+      return formatBlessingName(type) + " • " + getBlessingDescription(type) + " • about " + minutes + " minute(s) left";
     }
 
     function getUpgradeMax(type) {
