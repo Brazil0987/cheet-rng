@@ -715,6 +715,7 @@
       <div class="stat-box">Player: <span id="currentPlayer">Not signed in</span></div>
       <div class="stat-box">Rolls: <span id="rollCount">0</span></div>
       <div class="stat-box">Coins: <span id="coinCount">0</span></div>
+      <div class="stat-box">Total Coins: <span id="totalCoinCount">0</span></div>
       <div class="stat-box">Best: <span id="bestItem">None</span></div>
     </div>
 
@@ -777,7 +778,9 @@
         <h3>🟢 Chet Panel</h3>
         <p>Welcome to the Cheet Hut.</p>
         <p class="coin-text">Cheet Coins: <span id="hutCoinCount">0</span></p>
-        <p>Rarer towers give more Cheet Coins. Spend coins on upgrades.</p>
+        <p class="coin-text">Total Earned: <span id="hutTotalCoinCount">0</span></p>
+        <p class="reward-explain"><b>Tower coin rewards:</b> Common starts at 5 coins, Rare 12, Epic 30, Legendary 75, Mythic 175, Secret 750, and Cheeter 10,000+ before multipliers.</p>
+        <p>Rarer towers now give way more Cheet Coins. Spend coins on upgrades.</p>
       </div>
 
       <div class="shop-grid">
@@ -812,7 +815,7 @@
           <h3>💰 Coin Multiplier</h3>
           <p>Level: <span id="coinLevel">0</span>/<span id="coinMax">100</span></p>
           <p>Gives more Cheet Coins from every roll.</p>
-          <p class="upgrade-explain"><b>Exact effect:</b> +0.25x coins per level. Formula: 1x + level × 0.25x. Example: level 4 = 2x coins. Max level is 100.</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> tower coin rewards are higher now, and this upgrade adds +0.25x coins per level. Formula: 1x + level × 0.25x. Example: level 4 = 2x coins. Max level is 100.</p>
           <p>Current multiplier: <span id="coinMultiplierText">1x</span></p>
           <p>Cost: <span id="coinCost">1000</span> coins</p>
           <button id="coinBuyButton" onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
@@ -832,7 +835,7 @@
           <h3>🙏 DIMIS Worship</h3>
           <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
-          <p class="upgrade-explain"><b>Exact effect:</b> each worship gives +10 Worship Points. At 100/100 points, you get 1 random DIMIS blessing for 15 minutes and the meter resets to 0. Worship cost uses gentle old scaling: 40 + total upgrade levels × 4 + floor(sqrt(current coins) / 350).</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> each worship gives +10 Worship Points. At 100/100 points, you get 1 random DIMIS blessing for 15 minutes and the meter resets to 0. Worship cost uses gentle old scaling: 40 + total upgrade levels × 4 + floor(sqrt(total coins earned) / 350).</p>
           <div class="dimis-reward-list">
             <div><b>🍀 Luck Blessing:</b> 15 minutes of +20% roll weight for Mythic, Secret, and Cheeter towers.</div>
             <div><b>💰 Coin Blessing:</b> 15 minutes of 2x Cheet Coins from rolls.</div>
@@ -1018,6 +1021,7 @@
     }
 
     let cheetCoins = 0;
+    let totalCheetCoinsEarned = 0;
     let upgrades = { luck: 0, speed: 0, secret: 0, coin: 0 };
     const MAX_SPEED_LEVEL = 20;
     const MAX_UPGRADE_LEVEL = 100;
@@ -1188,6 +1192,7 @@
         achievements[id] = true;
         let bonus = getAchievementReward(id);
         cheetCoins += bonus;
+        totalCheetCoinsEarned += bonus;
         showRarityAnnouncement({
           name: "Achievement Bonus",
           chance: 1000,
@@ -1264,6 +1269,8 @@
 
       document.getElementById("coinCount").textContent = cheetCoins;
       document.getElementById("hutCoinCount").textContent = cheetCoins;
+      document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
+      document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
 
       document.getElementById("luckLevel").textContent = upgrades.luck;
       document.getElementById("speedLevel").textContent = upgrades.speed;
@@ -1382,6 +1389,7 @@
 
       let reward = getDailyRewardAmount();
       cheetCoins += reward;
+      totalCheetCoinsEarned += reward;
       lastHutReward = now;
 
       updateCoinsAndShop();
@@ -1396,7 +1404,7 @@
 
     function getDimisWorshipCost() {
       let upgradeCost = getTotalUpgradeLevels() * 4;
-      let earnedCost = Math.floor(Math.sqrt(Math.max(cheetCoins || 0, 0)) / 350);
+      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 350);
       let cost = 40 + upgradeCost + earnedCost;
 
       return cost;
@@ -1475,6 +1483,7 @@
         bestScore = 0;
         bestItem = "None";
         cheetCoins = 0;
+        totalCheetCoinsEarned = 0;
         upgrades = { luck: 0, speed: 0, secret: 0, coin: 0 };
         lastHutReward = 0;
         hutStreak = 0;
@@ -1493,6 +1502,7 @@
         document.getElementById("currentPlayer").textContent = "Not signed in";
         document.getElementById("rollCount").textContent = 0;
         document.getElementById("coinCount").textContent = 0;
+        document.getElementById("totalCoinCount").textContent = 0;
         document.getElementById("bestItem").textContent = "None";
         document.getElementById("resultName").textContent = "Sign in to roll!";
         showResultImage("chet.png");
@@ -1520,6 +1530,7 @@
         inventory = data.inventory || {};
         achievements = data.achievements || {};
         cheetCoins = data.cheetCoins || 0;
+        totalCheetCoinsEarned = data.totalCheetCoinsEarned || cheetCoins || 0;
         upgrades = data.upgrades || { luck: 0, speed: 0, secret: 0, coin: 0 };
         lastHutReward = data.lastHutReward || 0;
         hutStreak = data.hutStreak || 0;
@@ -1547,6 +1558,7 @@
           inventory: {},
           achievements: {},
           cheetCoins: 0,
+          totalCheetCoinsEarned: 0,
           upgrades: upgrades,
           lastHutReward: 0,
           hutStreak: 0,
@@ -1642,6 +1654,7 @@
         inventory: inventory,
         achievements: achievements,
         cheetCoins: cheetCoins,
+        totalCheetCoinsEarned: totalCheetCoinsEarned,
         upgrades: upgrades,
         lastHutReward: lastHutReward,
         hutStreak: hutStreak,
@@ -1748,21 +1761,21 @@
 
     function getCoinReward(item) {
       let rarityCoins = {
-        common: 1,
-        rare: 2,
-        epic: 4,
-        legendary: 8,
-        mythic: 15,
-        secret: 50,
-        cheeter: 500
+        common: 5,
+        rare: 12,
+        epic: 30,
+        legendary: 75,
+        mythic: 175,
+        secret: 750,
+        cheeter: 10000
       };
 
-      let baseCoins = rarityCoins[item.rarity] || 1;
-      let chanceBonus = Math.floor(Math.sqrt(item.chance) / 3);
+      let baseCoins = rarityCoins[item.rarity] || 5;
+      let chanceBonus = Math.floor(Math.sqrt(item.chance) / 2);
       let reward = baseCoins + chanceBonus;
 
       if (item.rarity === "cheeter") {
-        reward += 4500;
+        reward += 15000;
       }
 
       if (reward < 1) {
@@ -1771,8 +1784,8 @@
 
       reward = Math.floor(reward * getCoinMultiplier());
 
-      if (reward > 50000) {
-        reward = 50000;
+      if (reward > 250000) {
+        reward = 250000;
       }
 
       return reward;
@@ -1931,6 +1944,7 @@
       rolls++;
       let coinReward = getCoinReward(item);
       cheetCoins += coinReward;
+      totalCheetCoinsEarned += coinReward;
 
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
