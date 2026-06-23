@@ -2233,6 +2233,21 @@
       }
     }
 
+    function getEstimatedAutoRollTime() {
+      let delays = getRollDelays();
+      let totalDelay = 0;
+
+      for (let i = 0; i < delays.length; i++) {
+        totalDelay += Number(delays[i]) || 0;
+      }
+
+      if (totalDelay < 1000) {
+        totalDelay = 1000;
+      }
+
+      return totalDelay;
+    }
+
     async function startAutoRoll() {
       if (!currentUser) {
         alert("Sign in first!");
@@ -2250,7 +2265,10 @@
       autoRollEnabled = true;
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
-      lastAutoRollTime = Date.now();
+
+      // Start one virtual roll immediately, then continue by catch-up timing.
+      lastAutoRollTime = Date.now() - getEstimatedAutoRollTime();
+
       updateAutoRollButton();
 
       if (autoRollInterval) {
@@ -2267,10 +2285,6 @@
         clearInterval(catchUpInterval);
       }
 
-      await saveAfkTimerNow().catch(function(error) {
-        console.log("Saving Auto Roll timer failed:", error);
-      });
-
       catchUpInterval = setInterval(function() {
         if (!autoRollEnabled) return;
 
@@ -2278,6 +2292,10 @@
           console.log("Auto Roll catch-up failed:", error);
         });
       }, 1000);
+
+      await saveAfkTimerNow().catch(function(error) {
+        console.log("Saving Auto Roll timer failed:", error);
+      });
 
       catchUpAutoRolls().catch(function(error) {
         console.log("Auto Roll catch-up failed:", error);
@@ -2330,9 +2348,13 @@
       if (!currentUser) return;
       if (!hasUsername()) return;
 
-      await refreshAfkTimerFromFirebase();
+      // When Auto Roll is running on this page, use the local timer.
+      // Only read Firebase for real AFK catch-up after reopening/loading.
+      if (!autoRollEnabled) {
+        await refreshAfkTimerFromFirebase();
+      }
 
-      if (autoRollSaved && autoRollSessionId !== pageSessionId) {
+      if (autoRollSaved && autoRollSessionId !== pageSessionId && !autoRollEnabled) {
         autoRollSaved = false;
         autoRollSessionId = "";
         lastAutoRollTime = Date.now();
@@ -2351,13 +2373,8 @@
       if (!autoRollEnabled && !autoRollSaved) return;
 
       let now = Date.now();
-      let estimatedRollTime = 4000 - upgrades.speed * 200;
-
-      if (estimatedRollTime < 2200) {
-        estimatedRollTime = 2200;
-      }
-
-      let maxAfkTime = 12 * 60 * 60 * 1000; // 12 hours
+      let estimatedRollTime = getEstimatedAutoRollTime();
+      let maxAfkTime = 12 * 60 * 60 * 1000;
       let afkTime = now - lastAutoRollTime;
 
       if (afkTime > maxAfkTime) {
@@ -2368,8 +2385,16 @@
 
       if (missedRolls <= 0) return;
 
-      lastAutoRollTime = now;
-      if (autoRollSaved) {
+      // While actively Auto Rolling, keep each tick small and steady.
+      // When catching up from AFK, allow the full saved catch-up.
+      if (autoRollEnabled && missedRolls > 5) {
+        missedRolls = 5;
+      }
+
+      lastAutoRollTime += missedRolls * estimatedRollTime;
+
+      if (autoRollSaved || autoRollEnabled) {
+        autoRollSaved = true;
         autoRollSessionId = pageSessionId;
       }
 
@@ -2385,11 +2410,7 @@
         addCheetCoins(coinReward);
         totalCoinReward += coinReward;
 
-        if (inventory[item.name]) {
-          inventory[item.name]++;
-        } else {
-          inventory[item.name] = 1;
-        }
+        inventory[item.name] = Number(inventory[item.name] || 0) + 1;
 
         if (getBestScore(item) > bestScore || bestItem === "None") {
           bestScore = getBestScore(item);
@@ -2420,8 +2441,16 @@
         console.log("Save failed:", error);
       });
 
+      update(ref(database, "leaderboard/" + currentUser.uid), {
+        autoRollSaved: autoRollSaved,
+        autoRollSessionId: autoRollSessionId,
+        lastAutoRollTime: lastAutoRollTime
+      }).catch(function(error) {
+        console.log("Auto Roll timer update failed:", error);
+      });
+
       document.getElementById("resultName").textContent = "Auto roll caught up!";
-      document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls while AFK • +" + totalCoinReward + " coins";
+      document.getElementById("resultChance").textContent = "+" + missedRolls + " auto rolls • +" + totalCoinReward + " coins";
       showAfkCatchupPopup(missedRolls, totalCoinReward);
 
       if (bestCaughtItem) {
@@ -2436,18 +2465,7 @@
         showPookowskiAnimation();
       }
 
-      let wasAutoRolling = autoRollEnabled;
-      autoRollEnabled = false;
-
-      setTimeout(function() {
-        if (wasAutoRolling && currentUser && hasUsername()) {
-          autoRollEnabled = true;
-
-          if (!isRolling) {
-            rollItem();
-          }
-        }
-      }, 4000);
+      updateAutoRollButton();
     }
 
     document.addEventListener("visibilitychange", function() {
