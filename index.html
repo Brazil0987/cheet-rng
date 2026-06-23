@@ -838,7 +838,6 @@
     <div class="roll-controls">
       <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
       <button id="autoRollButton" class="auto-toggle-button off" type="button">AUTOROLL: OFF</button>
-        <button class="auto-toggle-button off" type="button" onclick="showGuaranteedCatchupPopup(3, 30)">TEST CATCH-UP POPUP</button>
     </div>
 
     <div class="result-box">
@@ -1222,39 +1221,47 @@
       if (!Number.isFinite(coinsEarned) || coinsEarned < 0) coinsEarned = 0;
 
       let popup = document.getElementById("afkCatchupPopup");
-      let text = document.getElementById("afkCatchupText");
 
       if (!popup) {
         popup = document.createElement("div");
         popup.id = "afkCatchupPopup";
-        popup.style.position = "fixed";
-        popup.style.left = "50%";
-        popup.style.top = "24px";
-        popup.style.transform = "translateX(-50%)";
-        popup.style.zIndex = "999999";
-        popup.style.background = "linear-gradient(135deg, #111, #1b1b1b)";
-        popup.style.border = "3px solid #49ff5a";
-        popup.style.borderRadius = "16px";
-        popup.style.boxShadow = "0 0 24px #49ff5a";
-        popup.style.padding = "18px 24px";
-        popup.style.color = "#49ff5a";
-        popup.style.fontSize = "22px";
-        popup.style.fontWeight = "900";
-        popup.style.textAlign = "center";
-        popup.style.fontFamily = "inherit";
         document.body.appendChild(popup);
       }
 
-      if (!text) {
-        text = document.createElement("div");
-        text.id = "afkCatchupText";
-        popup.innerHTML = "";
-        popup.appendChild(text);
-      }
+      popup.innerHTML =
+        '<div style="font-size:26px;margin-bottom:6px;">⚡ AFK CATCH-UP ⚡</div>' +
+        '<div style="font-size:20px;">+' + Math.floor(missedRolls) + ' rolls • +' + Math.floor(coinsEarned) + ' coins</div>' +
+        '<div style="font-size:13px;margin-top:8px;opacity:.85;">click to close</div>';
 
-      text.textContent = "AFK CATCH-UP: +" + Math.floor(missedRolls) + " rolls • +" + Math.floor(coinsEarned) + " coins";
-      popup.style.display = "block";
+      popup.style.cssText = [
+        "position:fixed",
+        "left:50%",
+        "top:28px",
+        "transform:translateX(-50%)",
+        "z-index:2147483647",
+        "display:block",
+        "visibility:visible",
+        "opacity:1",
+        "pointer-events:auto",
+        "min-width:260px",
+        "max-width:90vw",
+        "background:linear-gradient(135deg,#061406,#151515)",
+        "border:4px solid #49ff5a",
+        "border-radius:18px",
+        "box-shadow:0 0 35px #49ff5a, inset 0 0 18px rgba(73,255,90,.25)",
+        "padding:18px 24px",
+        "color:#49ff5a",
+        "font-weight:900",
+        "text-align:center",
+        "font-family:inherit",
+        "cursor:pointer"
+      ].join(";");
+
       popup.classList.add("show");
+      popup.onclick = function() {
+        popup.style.display = "none";
+        popup.classList.remove("show");
+      };
 
       if (window.afkPopupTimeout) {
         clearTimeout(window.afkPopupTimeout);
@@ -1263,7 +1270,7 @@
       window.afkPopupTimeout = setTimeout(function() {
         popup.style.display = "none";
         popup.classList.remove("show");
-      }, 6000);
+      }, 8000);
     }
 
     function showAfkCatchupPopup(missedRolls, coinsEarned) {
@@ -1886,6 +1893,7 @@
 
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
+      setLocalAutoRollState(true);
 
       await update(ref(database, "leaderboard/" + currentUser.uid), {
         autoRollSaved: true,
@@ -2250,7 +2258,43 @@
       }
     }
 
-    async function getEstimatedAutoRollTime() {
+    async function setLocalAutoRollState(saved) {
+      try {
+        localStorage.setItem("cheetRngAutoRollSaved", saved ? "true" : "false");
+        localStorage.setItem("cheetRngLastAutoRollTime", String(lastAutoRollTime || Date.now()));
+      } catch (error) {
+        console.log("Local AFK save failed:", error);
+      }
+    }
+
+    function getLocalAutoRollSaved() {
+      try {
+        return localStorage.getItem("cheetRngAutoRollSaved") === "true";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function getLocalLastAutoRollTime() {
+      try {
+        let value = Number(localStorage.getItem("cheetRngLastAutoRollTime"));
+        if (Number.isFinite(value) && value > 0) return value;
+      } catch (error) {
+        console.log("Local AFK read failed:", error);
+      }
+      return 0;
+    }
+
+    function clearLocalAutoRollState() {
+      try {
+        localStorage.setItem("cheetRngAutoRollSaved", "false");
+        localStorage.setItem("cheetRngLastAutoRollTime", String(Date.now()));
+      } catch (error) {
+        console.log("Local AFK clear failed:", error);
+      }
+    }
+
+    function getEstimatedAutoRollTime() {
       let delays = getRollDelays();
       let totalDelay = 0;
 
@@ -2283,16 +2327,12 @@
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
       lastAutoRollTime = Date.now();
+      setLocalAutoRollState(true);
 
       updateAutoRollButton();
 
-      if (autoRollTimer) {
-        clearInterval(autoRollTimer);
-      }
-
-      if (autoRollSaveTimer) {
-        clearInterval(autoRollSaveTimer);
-      }
+      if (autoRollTimer) clearInterval(autoRollTimer);
+      if (autoRollSaveTimer) clearInterval(autoRollSaveTimer);
 
       autoRollTimer = setInterval(function() {
         if (!autoRollEnabled) return;
@@ -2335,6 +2375,7 @@
       autoRollEnabled = false;
       autoRollSaved = false;
       autoRollSessionId = "";
+      clearLocalAutoRollState();
 
       if (autoRollTimer) {
         clearInterval(autoRollTimer);
@@ -2376,9 +2417,17 @@
       if (!hasUsername()) return;
       if (items.length === 0) return;
 
+      let localSaved = getLocalAutoRollSaved();
+      let localTime = getLocalLastAutoRollTime();
+
       await refreshAfkTimerFromFirebase();
 
-      if (!autoRollSaved) return;
+      if (localSaved && (!Number.isFinite(Number(lastAutoRollTime)) || localTime < Number(lastAutoRollTime) || !autoRollSaved)) {
+        autoRollSaved = true;
+        lastAutoRollTime = localTime || lastAutoRollTime || Date.now();
+      }
+
+      if (!autoRollSaved && !localSaved) return;
 
       let now = Date.now();
       let estimatedRollTime = Number(getEstimatedAutoRollTime());
@@ -2389,7 +2438,7 @@
 
       let savedTime = Number(lastAutoRollTime);
       if (!Number.isFinite(savedTime) || savedTime <= 0) {
-        savedTime = now;
+        savedTime = localTime || now;
       }
 
       let maxAfkTime = 12 * 60 * 60 * 1000;
@@ -2400,17 +2449,12 @@
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (!Number.isFinite(missedRolls) || missedRolls < 0) {
-        missedRolls = 0;
-      }
-
-      // If you came back too fast, show a tiny popup anyway so you can see catch-up is working.
-      if (missedRolls <= 0) {
+      if (!Number.isFinite(missedRolls) || missedRolls <= 0) {
         autoRollEnabled = true;
         autoRollSaved = true;
         autoRollSessionId = pageSessionId;
         updateAutoRollButton();
-        showGuaranteedCatchupPopup(0, 0);
+        setLocalAutoRollState(true);
         startAutoRoll();
         return;
       }
@@ -2451,6 +2495,7 @@
       autoRollEnabled = true;
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
+      setLocalAutoRollState(true);
 
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
@@ -2508,6 +2553,7 @@
       if (autoRollEnabled && currentUser && hasUsername()) {
         autoRollSaved = true;
         autoRollSessionId = pageSessionId;
+        setLocalAutoRollState(true);
 
         update(ref(database, "leaderboard/" + currentUser.uid), {
           autoRollSaved: true,
@@ -2739,8 +2785,7 @@ let sortedItems = [...items].sort(function(a, b) {
     window.rollItem = rollItem;
     window.startAutoRoll = startAutoRoll;
     window.stopAutoRoll = stopAutoRoll;
-        window.showGuaranteedCatchupPopup = showGuaranteedCatchupPopup;
-window.toggleAutoRoll = toggleAutoRoll;
+    window.toggleAutoRoll = toggleAutoRoll;
         window.updateAutoRollButton = updateAutoRollButton;
 window.showPage = showPage;
     window.buyUpgrade = buyUpgrade;
