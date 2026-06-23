@@ -1134,6 +1134,8 @@
     let autoRollSessionId = "";
     let leaderboardData = {};
     let lastAutoRollTime = Date.now();
+    let lastResumeCheckTime = Date.now();
+    let resumeCatchupTimer = null;
 
     let pageSessionId = sessionStorage.getItem("cheetRngPageSessionId");
     if (!pageSessionId) {
@@ -1229,22 +1231,22 @@
       }
 
       popup.innerHTML =
-        '<div style="font-size:26px;margin-bottom:6px;">⚡ AFK CATCH-UP ⚡</div>' +
+        '<div style="font-size:27px;margin-bottom:6px;">⚡ AFK CATCH-UP ⚡</div>' +
         '<div style="font-size:20px;">+' + Math.floor(missedRolls) + ' rolls • +' + Math.floor(coinsEarned) + ' coins</div>' +
         '<div style="font-size:13px;margin-top:8px;opacity:.85;">click to close</div>';
 
       popup.style.cssText = [
         "position:fixed",
         "left:50%",
-        "top:28px",
+        "top:30px",
         "transform:translateX(-50%)",
         "z-index:2147483647",
         "display:block",
         "visibility:visible",
         "opacity:1",
         "pointer-events:auto",
-        "min-width:260px",
-        "max-width:90vw",
+        "min-width:280px",
+        "max-width:92vw",
         "background:linear-gradient(135deg,#061406,#151515)",
         "border:4px solid #49ff5a",
         "border-radius:18px",
@@ -2422,7 +2424,7 @@
 
       await refreshAfkTimerFromFirebase();
 
-      if (localSaved && (!Number.isFinite(Number(lastAutoRollTime)) || localTime < Number(lastAutoRollTime) || !autoRollSaved)) {
+      if (localSaved && (!autoRollSaved || localTime < Number(lastAutoRollTime || 0))) {
         autoRollSaved = true;
         lastAutoRollTime = localTime || lastAutoRollTime || Date.now();
       }
@@ -2453,9 +2455,9 @@
         autoRollEnabled = true;
         autoRollSaved = true;
         autoRollSessionId = pageSessionId;
-        updateAutoRollButton();
         setLocalAutoRollState(true);
-        startAutoRoll();
+        updateAutoRollButton();
+        if (!isRolling) startAutoRoll();
         return;
       }
 
@@ -2528,7 +2530,38 @@
       if (bestCaughtItem && bestCaughtItem.chance >= 1000) showRarityAnnouncement(bestCaughtItem);
       if (caughtPookowski) showPookowskiAnimation();
 
-      startAutoRoll();
+      if (!isRolling) startAutoRoll();
+    }
+
+    function checkResumeCatchup() {
+      let now = Date.now();
+      let gap = now - lastResumeCheckTime;
+      lastResumeCheckTime = now;
+
+      let estimatedRollTime = Number(getEstimatedAutoRollTime());
+      if (!Number.isFinite(estimatedRollTime) || estimatedRollTime <= 0) {
+        estimatedRollTime = 3000;
+      }
+
+      if (gap >= Math.max(estimatedRollTime, 5000)) {
+        if ((autoRollEnabled || autoRollSaved || getLocalAutoRollSaved()) && currentUser && hasUsername()) {
+          catchUpAutoRolls().catch(function(error) {
+            console.log("Resume AFK catch-up failed:", error);
+          });
+        }
+      }
+    }
+
+    function startResumeCatchupChecker() {
+      if (resumeCatchupTimer) {
+        clearInterval(resumeCatchupTimer);
+      }
+
+      lastResumeCheckTime = Date.now();
+
+      resumeCatchupTimer = setInterval(function() {
+        checkResumeCatchup();
+      }, 1000);
     }
 
     document.addEventListener("visibilitychange", function() {
@@ -2537,6 +2570,7 @@
           console.log("AFK timer save failed:", error);
         });
       } else {
+        checkResumeCatchup();
         catchUpAutoRolls().catch(function(error) {
           console.log("AFK catch-up failed:", error);
         });
@@ -2566,12 +2600,14 @@
     });
 
     window.addEventListener("focus", function() {
+      checkResumeCatchup();
       catchUpAutoRolls().catch(function(error) {
         console.log("AFK catch-up failed:", error);
       });
     });
 
     window.addEventListener("pageshow", function() {
+      checkResumeCatchup();
       catchUpAutoRolls().catch(function(error) {
         console.log("AFK catch-up failed:", error);
       });
@@ -2807,6 +2843,8 @@ window.showPage = showPage;
       }
     });
 
+
+    startResumeCatchupChecker();
 </script>
 
 </body>
