@@ -802,7 +802,7 @@
           <h3>🙏 DIMIS Worship</h3>
           <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
-          <p class="upgrade-explain">Each worship gives +10 points. The price scales up every 10 worships. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
+          <p class="upgrade-explain">Each worship gives +10 points. The price scales like before: it slowly rises from your upgrade levels and total coins earned. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
           <div class="worship-meter"><div id="worshipFill" class="worship-fill"></div></div>
           <p>Worship Points: <span id="worshipPointsText">0</span>/100</p>
@@ -1342,9 +1342,16 @@
       alert("You claimed " + reward + " Cheet Coins! Streak: " + hutStreak + " day(s).");
     }
 
+    function getTotalUpgradeLevels() {
+      return (upgrades.luck || 0) + (upgrades.speed || 0) + (upgrades.secret || 0) + (upgrades.coin || 0);
+    }
+
     function getDimisWorshipCost() {
-      let scaleStep = Math.floor(dimisWorshipCount / 10);
-      return Math.floor(250 * Math.pow(1.25, scaleStep));
+      let upgradeCost = getTotalUpgradeLevels() * 35;
+      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 30);
+      let cost = 250 + upgradeCost + earnedCost;
+
+      return cost;
     }
 
     async function worshipDimis() {
@@ -1361,7 +1368,6 @@
       }
 
       cheetCoins -= cost;
-      dimisWorshipCount++;
       dimisWorshipPoints += 10;
 
       if (dimisWorshipPoints > 100) {
@@ -1370,7 +1376,7 @@
 
       unlockAchievement("firstWorship");
 
-      let message = "🙏 You worshipped DIMIS for " + cost + " coins. +10 Worship Points. (" + dimisWorshipPoints + "/100). Price scales every 10 worships.";
+      let message = "🙏 You worshipped DIMIS for " + cost + " coins. +10 Worship Points. (" + dimisWorshipPoints + "/100)";
 
       if (dimisWorshipPoints >= 100) {
         dimisWorshipPoints = 0;
