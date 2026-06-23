@@ -838,6 +838,7 @@
     <div class="roll-controls">
       <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
       <button id="autoRollButton" class="auto-toggle-button off" type="button">AUTOROLL: OFF</button>
+        <button class="auto-toggle-button off" type="button" onclick="showGuaranteedCatchupPopup(3, 30)">TEST CATCH-UP POPUP</button>
     </div>
 
     <div class="result-box">
@@ -1213,28 +1214,60 @@
       }
     }
 
-    function showAfkCatchupPopup(missedRolls, coinsEarned) {
-      let popup = document.getElementById("afkCatchupPopup");
-      let text = document.getElementById("afkCatchupText");
-
-      if (!popup || !text) return;
-
+    function showGuaranteedCatchupPopup(missedRolls, coinsEarned) {
       missedRolls = Number(missedRolls);
       coinsEarned = Number(coinsEarned);
 
       if (!Number.isFinite(missedRolls) || missedRolls < 0) missedRolls = 0;
       if (!Number.isFinite(coinsEarned) || coinsEarned < 0) coinsEarned = 0;
 
-      text.textContent = "+" + Math.floor(missedRolls) + " AFK rolls • +" + Math.floor(coinsEarned) + " coins";
-      popup.classList.add("show");
+      let popup = document.getElementById("afkCatchupPopup");
+      let text = document.getElementById("afkCatchupText");
 
-      if (afkPopupTimeout) {
-        clearTimeout(afkPopupTimeout);
+      if (!popup) {
+        popup = document.createElement("div");
+        popup.id = "afkCatchupPopup";
+        popup.style.position = "fixed";
+        popup.style.left = "50%";
+        popup.style.top = "24px";
+        popup.style.transform = "translateX(-50%)";
+        popup.style.zIndex = "999999";
+        popup.style.background = "linear-gradient(135deg, #111, #1b1b1b)";
+        popup.style.border = "3px solid #49ff5a";
+        popup.style.borderRadius = "16px";
+        popup.style.boxShadow = "0 0 24px #49ff5a";
+        popup.style.padding = "18px 24px";
+        popup.style.color = "#49ff5a";
+        popup.style.fontSize = "22px";
+        popup.style.fontWeight = "900";
+        popup.style.textAlign = "center";
+        popup.style.fontFamily = "inherit";
+        document.body.appendChild(popup);
       }
 
-      afkPopupTimeout = setTimeout(function() {
-        hideAfkCatchupPopup();
-      }, 4000);
+      if (!text) {
+        text = document.createElement("div");
+        text.id = "afkCatchupText";
+        popup.innerHTML = "";
+        popup.appendChild(text);
+      }
+
+      text.textContent = "AFK CATCH-UP: +" + Math.floor(missedRolls) + " rolls • +" + Math.floor(coinsEarned) + " coins";
+      popup.style.display = "block";
+      popup.classList.add("show");
+
+      if (window.afkPopupTimeout) {
+        clearTimeout(window.afkPopupTimeout);
+      }
+
+      window.afkPopupTimeout = setTimeout(function() {
+        popup.style.display = "none";
+        popup.classList.remove("show");
+      }, 6000);
+    }
+
+    function showAfkCatchupPopup(missedRolls, coinsEarned) {
+      showGuaranteedCatchupPopup(missedRolls, coinsEarned);
     }
 
     function showPookowskiAnimation() {
@@ -2367,11 +2400,17 @@
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (!Number.isFinite(missedRolls) || missedRolls <= 0) {
+      if (!Number.isFinite(missedRolls) || missedRolls < 0) {
+        missedRolls = 0;
+      }
+
+      // If you came back too fast, show a tiny popup anyway so you can see catch-up is working.
+      if (missedRolls <= 0) {
         autoRollEnabled = true;
         autoRollSaved = true;
         autoRollSessionId = pageSessionId;
         updateAutoRollButton();
+        showGuaranteedCatchupPopup(0, 0);
         startAutoRoll();
         return;
       }
@@ -2438,7 +2477,7 @@
 
       document.getElementById("resultName").textContent = "Auto Roll Catch-up!";
       document.getElementById("resultChance").textContent = "+" + missedRolls + " AFK rolls • +" + totalCoinReward + " coins";
-      showAfkCatchupPopup(missedRolls, totalCoinReward);
+      showGuaranteedCatchupPopup(missedRolls, totalCoinReward);
 
       if (bestCaughtItem) showResultImage(bestCaughtItem.image);
       if (bestCaughtItem && bestCaughtItem.chance >= 1000) showRarityAnnouncement(bestCaughtItem);
@@ -2453,7 +2492,9 @@
           console.log("AFK timer save failed:", error);
         });
       } else {
-        catchUpAutoRolls();
+        catchUpAutoRolls().catch(function(error) {
+          console.log("AFK catch-up failed:", error);
+        });
       }
     });
 
@@ -2479,11 +2520,15 @@
     });
 
     window.addEventListener("focus", function() {
-      catchUpAutoRolls();
+      catchUpAutoRolls().catch(function(error) {
+        console.log("AFK catch-up failed:", error);
+      });
     });
 
     window.addEventListener("pageshow", function() {
-      catchUpAutoRolls();
+      catchUpAutoRolls().catch(function(error) {
+        console.log("AFK catch-up failed:", error);
+      });
     });
 
     function updateTowers() {
@@ -2694,7 +2739,8 @@ let sortedItems = [...items].sort(function(a, b) {
     window.rollItem = rollItem;
     window.startAutoRoll = startAutoRoll;
     window.stopAutoRoll = stopAutoRoll;
-    window.toggleAutoRoll = toggleAutoRoll;
+        window.showGuaranteedCatchupPopup = showGuaranteedCatchupPopup;
+window.toggleAutoRoll = toggleAutoRoll;
         window.updateAutoRollButton = updateAutoRollButton;
 window.showPage = showPage;
     window.buyUpgrade = buyUpgrade;
