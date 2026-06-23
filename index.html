@@ -1355,12 +1355,23 @@
       return rewards[id] || 100;
     }
 
+    function addCheetCoins(amount) {
+      amount = Math.floor(amount);
+
+      if (amount <= 0) {
+        return;
+      }
+
+      cheetCoins += amount;
+      totalCheetCoinsEarned += amount;
+      checkCoinAchievements();
+    }
+
     function unlockAchievement(id) {
       if (!achievements[id]) {
         achievements[id] = true;
         let bonus = getAchievementReward(id);
-        cheetCoins += bonus;
-        totalCheetCoinsEarned += bonus;
+        addCheetCoins(bonus);
         showRarityAnnouncement({
           name: "Achievement Bonus",
           chance: 1000,
@@ -1453,6 +1464,8 @@
 
     function updateCoinsAndShop() {
       document.getElementById("coinCount").textContent = cheetCoins;
+      if (document.getElementById("totalCoinCount")) document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
+      if (document.getElementById("hutTotalCoinCount")) document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
       document.getElementById("hutCoinCount").textContent = cheetCoins;
       document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
       document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
@@ -1564,8 +1577,7 @@
       }
 
       let reward = getDailyRewardAmount();
-      cheetCoins += reward;
-      totalCheetCoinsEarned += reward;
+      addCheetCoins(reward);
       lastHutReward = now;
 
       updateCoinsAndShop();
@@ -2103,7 +2115,7 @@
     function finishRoll(item) {
       rolls++;
       let coinReward = getCoinReward(item);
-      cheetCoins += coinReward;
+      addCheetCoins(coinReward);
 
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
@@ -2295,7 +2307,7 @@
         let coinReward = getCoinReward(item);
 
         rolls++;
-        cheetCoins += coinReward;
+        addCheetCoins(coinReward);
         totalCoinReward += coinReward;
 
         if (inventory[item.name]) {
