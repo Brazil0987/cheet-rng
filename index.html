@@ -800,7 +800,7 @@
 
         <div class="shop-card">
           <h3>🙏 DIMIS Worship</h3>
-          <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
+          <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" onerror="this.style.display='none'" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
           <p class="upgrade-explain">Each worship gives +10 points. The price scales like before: it slowly rises from your upgrade levels and total coins earned. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
@@ -1348,7 +1348,15 @@
 
     function getDimisWorshipCost() {
       let upgradeCost = getTotalUpgradeLevels() * 35;
-      let earnedCost = Math.floor(Math.sqrt(Math.max(totalCheetCoinsEarned || 0, 0)) / 30);
+      let earnedSource = 0;
+
+      if (typeof totalCheetCoinsEarned !== "undefined") {
+        earnedSource = totalCheetCoinsEarned || 0;
+      } else {
+        earnedSource = cheetCoins || 0;
+      }
+
+      let earnedCost = Math.floor(Math.sqrt(Math.max(earnedSource, 0)) / 30);
       let cost = 250 + upgradeCost + earnedCost;
 
       return cost;
