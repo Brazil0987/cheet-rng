@@ -1126,6 +1126,7 @@
     let bestItem = "None";
     let isRolling = false;
     let autoRollEnabled = false;
+    let autoRollInterval = null;
       updateAutoRollButton();
     let autoRollSaved = false;
     let autoRollSessionId = "";
@@ -2164,7 +2165,6 @@
       }
 
       if (autoRollEnabled && currentUser && hasUsername()) {
-        // AUTO ROLL CONTINUE FIX
         setTimeout(function() {
           if (!isRolling && autoRollEnabled) {
             rollItem();
@@ -2180,14 +2180,14 @@
       let button = document.getElementById("autoRollButton");
       if (!button) return;
 
+      button.classList.add("auto-toggle-button");
+
       if (autoRollEnabled) {
         button.textContent = "AUTOROLL: ON";
-        button.classList.add("auto-toggle-button");
         button.classList.add("on");
         button.classList.remove("off");
       } else {
         button.textContent = "AUTOROLL: OFF";
-        button.classList.add("auto-toggle-button");
         button.classList.add("off");
         button.classList.remove("on");
       }
@@ -2218,6 +2218,18 @@
       autoRollEnabled = true;
       updateAutoRollButton();
 
+      if (autoRollInterval) {
+        clearInterval(autoRollInterval);
+      }
+
+      autoRollInterval = setInterval(function() {
+        if (!autoRollEnabled) return;
+        if (!currentUser || !hasUsername()) return;
+        if (!isRolling) {
+          rollItem();
+        }
+      }, 250);
+
       if (!isRolling) {
         rollItem();
       }
@@ -2229,6 +2241,12 @@
 
     function stopAutoRoll() {
       autoRollEnabled = false;
+
+      if (autoRollInterval) {
+        clearInterval(autoRollInterval);
+        autoRollInterval = null;
+      }
+
       updateAutoRollButton();
 
       if (currentUser && hasUsername()) {
@@ -2611,7 +2629,8 @@ let sortedItems = [...items].sort(function(a, b) {
     window.startAutoRoll = startAutoRoll;
     window.stopAutoRoll = stopAutoRoll;
     window.toggleAutoRoll = toggleAutoRoll;
-    window.showPage = showPage;
+        window.updateAutoRollButton = updateAutoRollButton;
+window.showPage = showPage;
     window.buyUpgrade = buyUpgrade;
     window.claimHutReward = claimHutReward;
     window.worshipDimis = worshipDimis;
