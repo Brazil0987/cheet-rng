@@ -1129,6 +1129,7 @@
     let autoRollEnabled = false;
     let autoRollInterval = null;
     let autoRollTimeout = null;
+    let catchUpInterval = null;
       updateAutoRollButton();
     let autoRollSaved = false;
     let autoRollSessionId = "";
@@ -2191,10 +2192,9 @@
         updateAutoRollButton();
 
         if (autoRollEnabled && currentUser && hasUsername()) {
-          if (autoRollTimeout) {
-            clearTimeout(autoRollTimeout);
-          }
-          autoRollTimeout = setTimeout(autoRollTick, 150);
+          catchUpAutoRolls().catch(function(error) {
+            console.log("Auto Roll catch-up failed:", error);
+          });
         }
       }
     }
@@ -2203,26 +2203,9 @@
     function autoRollTick() {
       if (!autoRollEnabled) return;
 
-      if (!currentUser || !hasUsername()) {
-        stopAutoRoll();
-        return;
-      }
-
-      if (isRolling && Date.now() - lastRollStartedTime > 10000) {
-        console.log("Auto Roll unstuck a frozen roll.");
-        isRolling = false;
-        document.getElementById("rollButton").disabled = false;
-      }
-
-      if (!isRolling) {
-        rollItem();
-      }
-
-      if (autoRollTimeout) {
-        clearTimeout(autoRollTimeout);
-      }
-
-      autoRollTimeout = setTimeout(autoRollTick, 750);
+      catchUpAutoRolls().catch(function(error) {
+        console.log("Auto Roll catch-up failed:", error);
+      });
     }
 
     function updateAutoRollButton() {
@@ -2265,6 +2248,9 @@
       }
 
       autoRollEnabled = true;
+      autoRollSaved = true;
+      autoRollSessionId = pageSessionId;
+      lastAutoRollTime = Date.now();
       updateAutoRollButton();
 
       if (autoRollInterval) {
@@ -2277,15 +2263,31 @@
         autoRollTimeout = null;
       }
 
-      autoRollTick();
+      if (catchUpInterval) {
+        clearInterval(catchUpInterval);
+      }
 
-      savePlayerData().catch(function(error) {
-        console.log("Save failed:", error);
+      await saveAfkTimerNow().catch(function(error) {
+        console.log("Saving Auto Roll timer failed:", error);
+      });
+
+      catchUpInterval = setInterval(function() {
+        if (!autoRollEnabled) return;
+
+        catchUpAutoRolls().catch(function(error) {
+          console.log("Auto Roll catch-up failed:", error);
+        });
+      }, 1000);
+
+      catchUpAutoRolls().catch(function(error) {
+        console.log("Auto Roll catch-up failed:", error);
       });
     }
 
     function stopAutoRoll() {
       autoRollEnabled = false;
+      autoRollSaved = false;
+      autoRollSessionId = "";
 
       if (autoRollInterval) {
         clearInterval(autoRollInterval);
@@ -2297,9 +2299,27 @@
         autoRollTimeout = null;
       }
 
+      if (catchUpInterval) {
+        clearInterval(catchUpInterval);
+        catchUpInterval = null;
+      }
+
+      isRolling = false;
+      if (document.getElementById("rollButton")) {
+        document.getElementById("rollButton").disabled = false;
+      }
+
       updateAutoRollButton();
 
       if (currentUser && hasUsername()) {
+        update(ref(database, "leaderboard/" + currentUser.uid), {
+          autoRollSaved: false,
+          autoRollSessionId: "",
+          lastAutoRollTime: Date.now()
+        }).catch(function(error) {
+          console.log("Stopping Auto Roll save failed:", error);
+        });
+
         savePlayerData().catch(function(error) {
           console.log("Save failed:", error);
         });
