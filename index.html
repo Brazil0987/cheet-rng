@@ -1218,7 +1218,13 @@
 
       if (!popup || !text) return;
 
-      text.textContent = "+" + missedRolls + " rolls while AFK • +" + coinsEarned + " coins";
+      missedRolls = Number(missedRolls);
+      coinsEarned = Number(coinsEarned);
+
+      if (!Number.isFinite(missedRolls) || missedRolls < 0) missedRolls = 0;
+      if (!Number.isFinite(coinsEarned) || coinsEarned < 0) coinsEarned = 0;
+
+      text.textContent = "+" + Math.floor(missedRolls) + " AFK rolls • +" + Math.floor(coinsEarned) + " coins";
       popup.classList.add("show");
 
       if (afkPopupTimeout) {
@@ -1838,6 +1844,10 @@
       if (!hasUsername()) return;
       if (!autoRollEnabled && !autoRollSaved) return;
 
+      if (!Number.isFinite(Number(lastAutoRollTime)) || Number(lastAutoRollTime) <= 0) {
+        lastAutoRollTime = Date.now();
+      }
+
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
 
@@ -2159,6 +2169,14 @@
 
         lastAutoRollTime = Date.now();
 
+        if (autoRollEnabled) {
+          autoRollSaved = true;
+          autoRollSessionId = pageSessionId;
+          saveAfkTimerNow().catch(function(error) {
+            console.log("AFK timer save failed:", error);
+          });
+        }
+
         savePlayerData().catch(function(error) {
           console.log("Save failed:", error);
         });
@@ -2210,8 +2228,8 @@
         totalDelay += Number(delays[i]) || 0;
       }
 
-      if (totalDelay < 1000) {
-        totalDelay = 1000;
+      if (!Number.isFinite(totalDelay) || totalDelay < 1000) {
+        totalDelay = 3000;
       }
 
       return totalDelay;
@@ -2243,6 +2261,7 @@
         autoRollTimer = null;
       }
 
+      // Live Auto Roll should visibly roll. Catch-up is only for returning after AFK.
       autoRollTimer = setInterval(function() {
         if (!autoRollEnabled) return;
         if (!currentUser || !hasUsername()) return;
@@ -2280,11 +2299,14 @@
         autoRollTimer = null;
       }
 
-      isRolling = false;
-      lastRollStartedTime = 0;
+      // Do not cancel the current roll. If a roll is already happening,
+      // keep the Roll button disabled until finishRoll unlocks it.
+      if (!isRolling) {
+        lastRollStartedTime = 0;
 
-      if (document.getElementById("rollButton")) {
-        document.getElementById("rollButton").disabled = false;
+        if (document.getElementById("rollButton")) {
+          document.getElementById("rollButton").disabled = false;
+        }
       }
 
       updateAutoRollButton();
@@ -2308,14 +2330,33 @@
       if (!currentUser) return;
       if (!hasUsername()) return;
 
+      // Do not show catch-up popups while live Auto Roll is already running.
+      if (autoRollEnabled) {
+        updateAutoRollButton();
+        return;
+      }
+
       await refreshAfkTimerFromFirebase();
 
       if (!autoRollSaved) return;
 
       let now = Date.now();
-      let estimatedRollTime = getEstimatedAutoRollTime();
+      let estimatedRollTime = Number(getEstimatedAutoRollTime());
+
+      if (!Number.isFinite(estimatedRollTime) || estimatedRollTime <= 0) {
+        estimatedRollTime = 3000;
+      }
+
+      if (!Number.isFinite(Number(lastAutoRollTime)) || Number(lastAutoRollTime) <= 0) {
+        lastAutoRollTime = now;
+      }
+
       let maxAfkTime = 12 * 60 * 60 * 1000;
-      let afkTime = now - lastAutoRollTime;
+      let afkTime = now - Number(lastAutoRollTime);
+
+      if (!Number.isFinite(afkTime) || afkTime < 0) {
+        afkTime = 0;
+      }
 
       if (afkTime > maxAfkTime) {
         afkTime = maxAfkTime;
@@ -2323,7 +2364,15 @@
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (missedRolls <= 0) return;
+      if (!Number.isFinite(missedRolls) || missedRolls <= 0) {
+        // Not enough time for a full roll yet, so keep Auto Roll saved and restart it.
+        autoRollEnabled = true;
+        autoRollSaved = true;
+        autoRollSessionId = pageSessionId;
+        updateAutoRollButton();
+        startAutoRoll();
+        return;
+      }
 
       lastAutoRollTime += missedRolls * estimatedRollTime;
 
@@ -2358,10 +2407,10 @@
         checkAchievements(item);
       }
 
-      // Catch-up is done. Do not keep auto rolling unless the user turns it on again.
-      autoRollSaved = false;
-      autoRollSessionId = "";
-      autoRollEnabled = false;
+      // Keep Auto Roll on after catch-up.
+      autoRollEnabled = true;
+      autoRollSaved = true;
+      autoRollSessionId = pageSessionId;
 
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
@@ -2372,19 +2421,19 @@
       updateCoinsAndShop();
       updateAutoRollButton();
 
-      await update(ref(database, "leaderboard/" + currentUser.uid), {
-        autoRollSaved: false,
-        autoRollSessionId: "",
-        lastAutoRollTime: Date.now()
+      update(ref(database, "leaderboard/" + currentUser.uid), {
+        autoRollSaved: true,
+        autoRollSessionId: autoRollSessionId,
+        lastAutoRollTime: lastAutoRollTime
       }).catch(function(error) {
-        console.log("Clearing AFK timer failed:", error);
+        console.log("AFK timer update failed:", error);
       });
 
       savePlayerData().catch(function(error) {
         console.log("Save failed:", error);
       });
 
-      document.getElementById("resultName").textContent = "Auto Roll catch-up!";
+      document.getElementById("resultName").textContent = "Auto Roll Catch-up!";
       document.getElementById("resultChance").textContent = "+" + missedRolls + " AFK rolls • +" + totalCoinReward + " coins";
       showAfkCatchupPopup(missedRolls, totalCoinReward);
 
@@ -2399,6 +2448,8 @@
       if (caughtPookowski) {
         showPookowskiAnimation();
       }
+
+      startAutoRoll();
     }
 
     document.addEventListener("visibilitychange", function() {
@@ -2433,11 +2484,15 @@
     });
 
     window.addEventListener("focus", function() {
-      catchUpAutoRolls();
+      if (!autoRollEnabled) {
+        catchUpAutoRolls();
+      }
     });
 
     window.addEventListener("pageshow", function() {
-      catchUpAutoRolls();
+      if (!autoRollEnabled) {
+        catchUpAutoRolls();
+      }
     });
 
     function updateTowers() {
