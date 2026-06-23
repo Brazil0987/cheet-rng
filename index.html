@@ -730,14 +730,6 @@
     }
 
   
-    /* Exact upgrade stat highlights */
-    .upgrade-stat-list b,
-    .upgrade-stat-list .exact-stat {
-      color: #49ff5a;
-      text-shadow: 0 0 6px #49ff5a;
-    }
-
-  
     .dimis-worship-image {
       width: min(100%, 360px);
       max-height: 300px;
@@ -748,6 +740,34 @@
       margin: 8px auto 12px;
       display: block;
       background: #050505;
+    }
+
+  
+    /* Final themed Auto Roll button */
+    #autoRollButton.auto-toggle-button {
+      width: auto !important;
+      min-width: 185px !important;
+      max-width: 240px !important;
+      padding: 12px 18px !important;
+      font-size: 17px !important;
+      border-radius: 12px !important;
+      border: 2px solid #49ff5a !important;
+      cursor: pointer !important;
+      margin: 8px !important;
+      font-family: inherit !important;
+      letter-spacing: 0.5px !important;
+      text-transform: uppercase !important;
+      box-shadow: 0 0 12px rgba(73,255,90,0.65) !important;
+    }
+
+    #autoRollButton.auto-toggle-button.off {
+      background: #111111 !important;
+      color: #49ff5a !important;
+    }
+
+    #autoRollButton.auto-toggle-button.on {
+      background: linear-gradient(135deg, #1bcf28, #49ff5a) !important;
+      color: #050505 !important;
     }
 
   </style>
@@ -864,8 +884,8 @@
           <p>Makes the roll animation faster.</p>
           <div class="upgrade-stat-list">
             <div>Current speed: <span id="speedMultiplierText">1.00x</span></div>
-            <div>With DIMIS Speed: <span id="speedWithDimisText">1.25x</span></div>
-            <div>Each level: <span class="exact-stat">increases speed by about 3.23%</span></div>
+            <div>Each level: +3.23% speed</div>
+            <div>DIMIS Speed Blessing: +25% speed</div>
           </div>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedUpgradeButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
@@ -924,7 +944,7 @@
             <div>At 100 points: random 15-minute blessing</div>
             <div>🍀 Luck: 1.20x rare odds</div>
             <div>💰 Coins: 2.00x Cheet Coins</div>
-            <div>⚡ Speed: <span class="exact-stat">increases speed by 25%</span></div>
+            <div>⚡ Speed Blessing: +25% speed</div>
             <div>🌌 Miracle: 1.35x secret / cheeter odds</div>
           </div>
           <button onclick="worshipDimis()">Worship DIMIS</button>
@@ -1094,6 +1114,7 @@
     let bestItem = "None";
     let isRolling = false;
     let autoRollEnabled = false;
+      updateAutoRollButton();
     let autoRollSaved = false;
     let autoRollSessionId = "";
     let leaderboardData = {};
@@ -1693,6 +1714,7 @@
       if (autoRollSaved && hasUsername()) {
         if (autoRollSessionId === pageSessionId) {
           autoRollEnabled = true;
+      updateAutoRollButton();
           setTimeout(function() {
             catchUpAutoRolls();
           }, 600);
