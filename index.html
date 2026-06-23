@@ -1231,21 +1231,21 @@
       }
 
       popup.innerHTML =
-        '<div style="font-size:27px;margin-bottom:6px;">⚡ AFK CATCH-UP ⚡</div>' +
+        '<div style="font-size:28px;margin-bottom:6px;">⚡ AFK CATCH-UP ⚡</div>' +
         '<div style="font-size:20px;">+' + Math.floor(missedRolls) + ' rolls • +' + Math.floor(coinsEarned) + ' coins</div>' +
         '<div style="font-size:13px;margin-top:8px;opacity:.85;">click to close</div>';
 
       popup.style.cssText = [
         "position:fixed",
         "left:50%",
-        "top:30px",
+        "top:28px",
         "transform:translateX(-50%)",
         "z-index:2147483647",
         "display:block",
         "visibility:visible",
         "opacity:1",
         "pointer-events:auto",
-        "min-width:280px",
+        "min-width:285px",
         "max-width:92vw",
         "background:linear-gradient(135deg,#061406,#151515)",
         "border:4px solid #49ff5a",
@@ -1895,7 +1895,7 @@
 
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
-      setLocalAutoRollState(true);
+      markAutoRollActiveNow();
 
       await update(ref(database, "leaderboard/" + currentUser.uid), {
         autoRollSaved: true,
@@ -2296,6 +2296,48 @@
       }
     }
 
+    function markAfkStartNow() {
+      try {
+        if (autoRollEnabled || autoRollSaved) {
+          localStorage.setItem("cheetRngWasAutoRollOn", "true");
+          localStorage.setItem("cheetRngAfkStartTime", String(Date.now()));
+        }
+      } catch (error) {
+        console.log("Local AFK start save failed:", error);
+      }
+    }
+
+    function markAutoRollActiveNow() {
+      try {
+        localStorage.setItem("cheetRngWasAutoRollOn", "true");
+        if (!localStorage.getItem("cheetRngAfkStartTime")) {
+          localStorage.setItem("cheetRngAfkStartTime", String(Date.now()));
+        }
+      } catch (error) {
+        console.log("Local Auto Roll active save failed:", error);
+      }
+    }
+
+    function clearLocalAfkState() {
+      try {
+        localStorage.setItem("cheetRngWasAutoRollOn", "false");
+        localStorage.removeItem("cheetRngAfkStartTime");
+      } catch (error) {
+        console.log("Local AFK clear failed:", error);
+      }
+    }
+
+    function getLocalAfkStartTime() {
+      try {
+        if (localStorage.getItem("cheetRngWasAutoRollOn") !== "true") return 0;
+        let value = Number(localStorage.getItem("cheetRngAfkStartTime"));
+        if (Number.isFinite(value) && value > 0) return value;
+      } catch (error) {
+        console.log("Local AFK read failed:", error);
+      }
+      return 0;
+    }
+
     function getEstimatedAutoRollTime() {
       let delays = getRollDelays();
       let totalDelay = 0;
@@ -2329,7 +2371,7 @@
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
       lastAutoRollTime = Date.now();
-      setLocalAutoRollState(true);
+      markAutoRollActiveNow();
 
       updateAutoRollButton();
 
@@ -2377,7 +2419,7 @@
       autoRollEnabled = false;
       autoRollSaved = false;
       autoRollSessionId = "";
-      clearLocalAutoRollState();
+      clearLocalAfkState();
 
       if (autoRollTimer) {
         clearInterval(autoRollTimer);
@@ -2414,33 +2456,19 @@
       }
     }
 
-    async function catchUpAutoRolls() {
-      if (!currentUser) return;
-      if (!hasUsername()) return;
-      if (items.length === 0) return;
-
-      let localSaved = getLocalAutoRollSaved();
-      let localTime = getLocalLastAutoRollTime();
-
-      await refreshAfkTimerFromFirebase();
-
-      if (localSaved && (!autoRollSaved || localTime < Number(lastAutoRollTime || 0))) {
-        autoRollSaved = true;
-        lastAutoRollTime = localTime || lastAutoRollTime || Date.now();
-      }
-
-      if (!autoRollSaved && !localSaved) return;
+    async function runAfkCatchupFromStart(savedTime) {
+      if (!currentUser) return false;
+      if (!hasUsername()) return false;
+      if (items.length === 0) return false;
 
       let now = Date.now();
-      let estimatedRollTime = Number(getEstimatedAutoRollTime());
+      savedTime = Number(savedTime);
 
+      if (!Number.isFinite(savedTime) || savedTime <= 0) return false;
+
+      let estimatedRollTime = Number(getEstimatedAutoRollTime());
       if (!Number.isFinite(estimatedRollTime) || estimatedRollTime <= 0) {
         estimatedRollTime = 3000;
-      }
-
-      let savedTime = Number(lastAutoRollTime);
-      if (!Number.isFinite(savedTime) || savedTime <= 0) {
-        savedTime = localTime || now;
       }
 
       let maxAfkTime = 12 * 60 * 60 * 1000;
@@ -2450,18 +2478,7 @@
       if (afkTime > maxAfkTime) afkTime = maxAfkTime;
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
-
-      if (!Number.isFinite(missedRolls) || missedRolls <= 0) {
-        autoRollEnabled = true;
-        autoRollSaved = true;
-        autoRollSessionId = pageSessionId;
-        setLocalAutoRollState(true);
-        updateAutoRollButton();
-        if (!isRolling) startAutoRoll();
-        return;
-      }
-
-      lastAutoRollTime = now;
+      if (!Number.isFinite(missedRolls) || missedRolls <= 0) return false;
 
       let bestCaughtItem = null;
       let caughtPookowski = false;
@@ -2494,10 +2511,11 @@
         checkAchievements(item);
       }
 
+      lastAutoRollTime = now;
       autoRollEnabled = true;
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
-      setLocalAutoRollState(true);
+      markAutoRollActiveNow();
 
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
@@ -2531,11 +2549,45 @@
       if (caughtPookowski) showPookowskiAnimation();
 
       if (!isRolling) startAutoRoll();
+
+      return true;
+    }
+
+    async function catchUpAutoRolls() {
+      if (!currentUser) return;
+      if (!hasUsername()) return;
+      if (items.length === 0) return;
+
+      let localStart = getLocalAfkStartTime();
+
+      if (localStart) {
+        let didLocalCatchup = await runAfkCatchupFromStart(localStart);
+        if (didLocalCatchup) return;
+      }
+
+      await refreshAfkTimerFromFirebase();
+
+      if (!autoRollSaved) return;
+
+      let savedTime = Number(lastAutoRollTime);
+      if (!Number.isFinite(savedTime) || savedTime <= 0) return;
+
+      let didFirebaseCatchup = await runAfkCatchupFromStart(savedTime);
+
+      if (!didFirebaseCatchup) {
+        autoRollEnabled = true;
+        autoRollSaved = true;
+        autoRollSessionId = pageSessionId;
+        markAutoRollActiveNow();
+        updateAutoRollButton();
+        if (!isRolling) startAutoRoll();
+      }
     }
 
     function checkResumeCatchup() {
       let now = Date.now();
-      let gap = now - lastResumeCheckTime;
+      let previousCheck = lastResumeCheckTime;
+      let gap = now - previousCheck;
       lastResumeCheckTime = now;
 
       let estimatedRollTime = Number(getEstimatedAutoRollTime());
@@ -2544,7 +2596,16 @@
       }
 
       if (gap >= Math.max(estimatedRollTime, 5000)) {
-        if ((autoRollEnabled || autoRollSaved || getLocalAutoRollSaved()) && currentUser && hasUsername()) {
+        if ((autoRollEnabled || autoRollSaved || getLocalAfkStartTime()) && currentUser && hasUsername()) {
+          if (!getLocalAfkStartTime()) {
+            try {
+              localStorage.setItem("cheetRngWasAutoRollOn", "true");
+              localStorage.setItem("cheetRngAfkStartTime", String(previousCheck));
+            } catch (error) {
+              console.log("Resume local AFK set failed:", error);
+            }
+          }
+
           catchUpAutoRolls().catch(function(error) {
             console.log("Resume AFK catch-up failed:", error);
           });
@@ -2566,11 +2627,11 @@
 
     document.addEventListener("visibilitychange", function() {
       if (document.hidden) {
+        markAfkStartNow();
         saveAfkTimerNow().catch(function(error) {
           console.log("AFK timer save failed:", error);
         });
       } else {
-        checkResumeCatchup();
         catchUpAutoRolls().catch(function(error) {
           console.log("AFK catch-up failed:", error);
         });
@@ -2578,6 +2639,7 @@
     });
 
     window.addEventListener("blur", function() {
+      markAfkStartNow();
       saveAfkTimerNow().catch(function(error) {
         console.log("AFK timer save failed:", error);
       });
@@ -2587,7 +2649,7 @@
       if (autoRollEnabled && currentUser && hasUsername()) {
         autoRollSaved = true;
         autoRollSessionId = pageSessionId;
-        setLocalAutoRollState(true);
+        markAfkStartNow();
 
         update(ref(database, "leaderboard/" + currentUser.uid), {
           autoRollSaved: true,
@@ -2600,14 +2662,12 @@
     });
 
     window.addEventListener("focus", function() {
-      checkResumeCatchup();
       catchUpAutoRolls().catch(function(error) {
         console.log("AFK catch-up failed:", error);
       });
     });
 
     window.addEventListener("pageshow", function() {
-      checkResumeCatchup();
       catchUpAutoRolls().catch(function(error) {
         console.log("AFK catch-up failed:", error);
       });
