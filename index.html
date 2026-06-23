@@ -945,7 +945,7 @@
             <div>At 100 points: random 15-minute blessing</div>
             <div>🍀 Luck: 1.20x rare odds</div>
             <div>💰 Coins: 2.00x Cheet Coins</div>
-            <div>⚡ Speed: <span id="speedBlessingFinalText">1.25x</span></div>
+            <div>⚡ Speed: 1.25x</div>
             <div>🌌 Miracle: 1.35x secret / cheeter odds</div>
           </div>
           <button onclick="worshipDimis()">Worship DIMIS</button>
@@ -1438,7 +1438,6 @@
       document.getElementById("luckWithDimisText").textContent = (getLuckMultiplier() * 1.2).toFixed(2) + "x";
       document.getElementById("speedMultiplierText").textContent = getSpeedDisplayMultiplier().toFixed(2) + "x";
       document.getElementById("speedWithDimisText").textContent = getSpeedWithDimisText();
-      if (document.getElementById("speedBlessingFinalText")) document.getElementById("speedBlessingFinalText").textContent = getSpeedWithDimisText();
       document.getElementById("secretMultiplierText").textContent = getSecretMultiplier().toFixed(2) + "x";
       document.getElementById("cheeterMultiplierText").textContent = getCheeterSecretMultiplier().toFixed(2) + "x";
       document.getElementById("secretWithDimisLuckText").textContent = (getSecretMultiplier() * 1.2).toFixed(2) + "x";
