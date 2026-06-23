@@ -802,7 +802,7 @@
           <h3>🙏 DIMIS Worship</h3>
           <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
-          <p class="upgrade-explain">Each worship gives +10 points. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
+          <p class="upgrade-explain">Each worship gives +10 points. The price scales up every time you worship. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
           <div class="worship-meter"><div id="worshipFill" class="worship-fill"></div></div>
           <p>Worship Points: <span id="worshipPointsText">0</span>/100</p>
@@ -988,6 +988,7 @@
     let lastHutReward = 0;
     let hutStreak = 0;
     let dimisWorshipPoints = 0;
+    let dimisWorshipCount = 0;
     let activeBlessing = { type: "none", until: 0 };
 
     function escapeHtml(text) {
@@ -1256,7 +1257,7 @@
       document.getElementById("dailyRewardAmount").textContent = getDailyRewardAmount();
       document.getElementById("worshipPointsText").textContent = dimisWorshipPoints;
       document.getElementById("worshipFill").style.width = Math.min(dimisWorshipPoints, 100) + "%";
-      document.getElementById("worshipCost").textContent = 250;
+      document.getElementById("worshipCost").textContent = getDimisWorshipCost();
       document.getElementById("activeBlessingText").textContent = getBlessingTimeLeftText();
 
       let now = Date.now();
@@ -1341,13 +1342,17 @@
       alert("You claimed " + reward + " Cheet Coins! Streak: " + hutStreak + " day(s).");
     }
 
+    function getDimisWorshipCost() {
+      return Math.floor(250 * Math.pow(1.18, dimisWorshipCount));
+    }
+
     async function worshipDimis() {
       if (!currentUser || !hasUsername()) {
         alert("Sign in and choose a username first!");
         return;
       }
 
-      let cost = 250;
+      let cost = getDimisWorshipCost();
 
       if (cheetCoins < cost) {
         alert("Not enough Cheet Coins to worship DIMIS!");
@@ -1355,6 +1360,7 @@
       }
 
       cheetCoins -= cost;
+      dimisWorshipCount++;
       dimisWorshipPoints += 10;
 
       if (dimisWorshipPoints > 100) {
@@ -1363,7 +1369,7 @@
 
       unlockAchievement("firstWorship");
 
-      let message = "🙏 You worshipped DIMIS. +10 Worship Points. (" + dimisWorshipPoints + "/100)";
+      let message = "🙏 You worshipped DIMIS for " + cost + " coins. +10 Worship Points. (" + dimisWorshipPoints + "/100)";
 
       if (dimisWorshipPoints >= 100) {
         dimisWorshipPoints = 0;
@@ -1424,6 +1430,7 @@
         lastHutReward = 0;
         hutStreak = 0;
         dimisWorshipPoints = 0;
+        dimisWorshipCount = 0;
         activeBlessing = { type: "none", until: 0 };
         autoRollSaved = false;
         autoRollSessionId = "";
@@ -1469,6 +1476,7 @@
         lastHutReward = data.lastHutReward || 0;
         hutStreak = data.hutStreak || 0;
         dimisWorshipPoints = data.dimisWorshipPoints || 0;
+        dimisWorshipCount = data.dimisWorshipCount || 0;
         activeBlessing = data.activeBlessing || { type: "none", until: 0 };
         autoRollSaved = data.autoRollSaved || false;
         autoRollSessionId = data.autoRollSessionId || "";
@@ -1496,6 +1504,7 @@
           lastHutReward: 0,
           hutStreak: 0,
           dimisWorshipPoints: 0,
+          dimisWorshipCount: 0,
           activeBlessing: { type: "none", until: 0 },
           autoRollSaved: false,
           autoRollSessionId: "",
@@ -1591,6 +1600,7 @@
         lastHutReward: lastHutReward,
         hutStreak: hutStreak,
         dimisWorshipPoints: dimisWorshipPoints,
+        dimisWorshipCount: dimisWorshipCount,
         activeBlessing: activeBlessing,
         autoRollSaved: autoRollSaved,
         autoRollSessionId: autoRollSessionId,
