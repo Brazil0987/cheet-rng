@@ -2331,29 +2331,9 @@
 
       await refreshAfkTimerFromFirebase();
 
-      if (!autoRollEnabled && !autoRollSaved) return;
+      if (!autoRollSaved) return;
 
       let now = Date.now();
-      let heartbeatLimit = 2 * 60 * 1000;
-
-      if (autoRollSaved && autoRollHeartbeat && now - autoRollHeartbeat > heartbeatLimit) {
-        autoRollSaved = false;
-        autoRollSessionId = "";
-        autoRollHeartbeat = 0;
-        lastAutoRollTime = now;
-
-        update(ref(database, "leaderboard/" + currentUser.uid), {
-          autoRollSaved: false,
-          autoRollSessionId: "",
-          autoRollHeartbeat: 0,
-          lastAutoRollTime: lastAutoRollTime
-        }).catch(function(error) {
-          console.log("Clearing stale AFK heartbeat failed:", error);
-        });
-
-        return;
-      }
-
       let estimatedRollTime = 4000 - upgrades.speed * 200;
 
       if (estimatedRollTime < 2200) {
@@ -2361,7 +2341,11 @@
       }
 
       let maxAfkTime = 12 * 60 * 60 * 1000;
-      let afkTime = now - lastAutoRollTime;
+      let afkTime = now - Number(lastAutoRollTime || now);
+
+      if (!Number.isFinite(afkTime) || afkTime < 0) {
+        afkTime = 0;
+      }
 
       if (afkTime > maxAfkTime) {
         afkTime = maxAfkTime;
@@ -2369,13 +2353,13 @@
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (missedRolls <= 0) return;
+      if (!Number.isFinite(missedRolls) || missedRolls <= 0) {
+        return;
+      }
 
       lastAutoRollTime = now;
-      if (autoRollSaved) {
-        autoRollSessionId = pageSessionId;
-        autoRollHeartbeat = Date.now();
-      }
+      autoRollSessionId = pageSessionId;
+      autoRollHeartbeat = Date.now();
 
       let bestCaughtItem = null;
       let caughtPookowski = false;
@@ -2436,15 +2420,29 @@
         showPookowskiAnimation();
       }
 
-      if (autoRollSaved) {
-        update(ref(database, "leaderboard/" + currentUser.uid), {
-          autoRollSaved: true,
-          autoRollSessionId: autoRollSessionId,
-          autoRollHeartbeat: autoRollHeartbeat,
-          lastAutoRollTime: lastAutoRollTime
-        }).catch(function(error) {
-          console.log("AFK timer update failed:", error);
-        });
+      // Keep Auto Roll available after the catch-up, the same style.
+      autoRollEnabled = true;
+      autoRollSaved = true;
+      autoRollSessionId = pageSessionId;
+      autoRollHeartbeat = Date.now();
+      updateAutoRollButton();
+      startAfkSaveLoop();
+
+      update(ref(database, "leaderboard/" + currentUser.uid), {
+        autoRollSaved: true,
+        autoRollSessionId: autoRollSessionId,
+        autoRollHeartbeat: autoRollHeartbeat,
+        lastAutoRollTime: lastAutoRollTime
+      }).catch(function(error) {
+        console.log("AFK timer update failed:", error);
+      });
+
+      if (!isRolling) {
+        setTimeout(function() {
+          if (autoRollEnabled && !isRolling) {
+            rollItem();
+          }
+        }, 250);
       }
     }
 
@@ -2482,13 +2480,13 @@
     });
 
     window.addEventListener("focus", function() {
-      if (!autoRollEnabled) {
+      if (!isRolling) {
         catchUpAutoRolls();
       }
     });
 
     window.addEventListener("pageshow", function() {
-      if (!autoRollEnabled) {
+      if (!isRolling) {
         catchUpAutoRolls();
       }
     });
