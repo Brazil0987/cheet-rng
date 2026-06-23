@@ -878,7 +878,7 @@
       <div class="shop-grid">
         <div class="shop-card">
           <h3>🍀 Luck Boost</h3>
-          <p>Level: <span id="luckLevel">0</span></p>
+          <p>Level: <span id="luckLevel">0</span> / <span id="luckMaxLevelText">100</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
           <div class="upgrade-stat-list">
             <div>Each level: +0.04x mythic / secret / Cheeter odds</div>
@@ -886,7 +886,7 @@
             <div>With DIMIS Luck: <span id="luckWithDimisText">1.20x</span></div>
           </div>
           <p>Cost: <span id="luckCost">500</span> coins</p>
-          <button onclick="buyUpgrade('luck')">Buy Luck Boost</button>
+          <button id="luckUpgradeButton" onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
 
         <div class="shop-card">
@@ -904,7 +904,7 @@
 
         <div class="shop-card">
           <h3>🕵️ Secret Upgrade</h3>
-          <p>Level: <span id="secretLevel">0</span></p>
+          <p>Level: <span id="secretLevel">0</span> / <span id="secretMaxLevelText">100</span></p>
           <p>Boosts secret and cheeter odds.</p>
           <div class="upgrade-stat-list">
             <div>Each level: +0.12x secret odds / +0.15x Cheeter odds</div>
@@ -914,12 +914,12 @@
             <div>With DIMIS Miracle: Secret <span id="secretWithDimisMiracleText">1.35x</span> • Cheeter <span id="cheeterWithDimisMiracleText">1.35x</span></div>
           </div>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
-          <button onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
+          <button id="secretUpgradeButton" onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
 
         <div class="shop-card">
           <h3>💰 Coin Multiplier</h3>
-          <p>Level: <span id="coinLevel">0</span></p>
+          <p>Level: <span id="coinLevel">0</span> / <span id="coinMaxLevelText">100</span></p>
           <p>Gives more Cheet Coins from every roll.</p>
           <div class="upgrade-stat-list">
             <div>Each level: +0.25x Cheet Coins</div>
@@ -927,7 +927,7 @@
             <div>With DIMIS Coin Blessing: <span id="coinWithDimisText">2.00x</span></div>
           </div>
           <p>Cost: <span id="coinCost">1000</span> coins</p>
-          <button onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
+          <button id="coinUpgradeButton" onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
         </div>
 
         <div class="shop-card">
@@ -1146,6 +1146,7 @@
     let dimisWorshipPoints = 0;
     let activeBlessing = { type: "none", until: 0 };
     const MAX_SPEED_LEVEL = 20;
+    const MAX_UPGRADE_LEVEL = 100;
 
     function escapeHtml(text) {
       return String(text)
@@ -1408,18 +1409,41 @@
         return upgrades.speed >= MAX_SPEED_LEVEL;
       }
 
-      return false;
+      return upgrades[type] >= MAX_UPGRADE_LEVEL;
     }
 
     function getUpgradeCost(type) {
+      if (isUpgradeMaxed(type)) return 0;
+
       if (type === "luck") return 500 + upgrades.luck * 500;
-      if (type === "speed") {
-        if (isUpgradeMaxed("speed")) return 0;
-        return 750 + upgrades.speed * 750;
-      }
+      if (type === "speed") return 750 + upgrades.speed * 750;
       if (type === "secret") return 2500 + upgrades.secret * 2500;
       if (type === "coin") return 1000 + upgrades.coin * 1200;
       return 999999;
+    }
+
+    function updateUpgradeButton(type, label) {
+      let costSpan = document.getElementById(type + "Cost");
+      let button = document.getElementById(type + "UpgradeButton");
+      let maxSpan = document.getElementById(type + "MaxLevelText");
+
+      if (maxSpan) {
+        maxSpan.textContent = type === "speed" ? MAX_SPEED_LEVEL : MAX_UPGRADE_LEVEL;
+      }
+
+      if (isUpgradeMaxed(type)) {
+        if (costSpan) costSpan.textContent = "MAX";
+        if (button) {
+          button.disabled = true;
+          button.textContent = "Max " + label + " Reached";
+        }
+      } else {
+        if (costSpan) costSpan.textContent = getUpgradeCost(type);
+        if (button) {
+          button.disabled = false;
+          button.textContent = "Buy " + label;
+        }
+      }
     }
 
     function updateCoinsAndShop() {
@@ -1432,27 +1456,11 @@
       document.getElementById("speedLevel").textContent = upgrades.speed;
       document.getElementById("secretLevel").textContent = upgrades.secret;
       document.getElementById("coinLevel").textContent = upgrades.coin;
+      updateUpgradeButton("luck", "Luck Boost");
+      updateUpgradeButton("speed", "Speed");
+      updateUpgradeButton("secret", "Secret Upgrade");
+      updateUpgradeButton("coin", "Coin Multiplier");
 
-      document.getElementById("luckCost").textContent = getUpgradeCost("luck");
-      if (document.getElementById("speedMaxLevelText")) {
-        document.getElementById("speedMaxLevelText").textContent = MAX_SPEED_LEVEL;
-      }
-
-      if (isUpgradeMaxed("speed")) {
-        document.getElementById("speedCost").textContent = "MAX";
-        if (document.getElementById("speedUpgradeButton")) {
-          document.getElementById("speedUpgradeButton").disabled = true;
-          document.getElementById("speedUpgradeButton").textContent = "Max Speed Reached";
-        }
-      } else {
-        document.getElementById("speedCost").textContent = getUpgradeCost("speed");
-        if (document.getElementById("speedUpgradeButton")) {
-          document.getElementById("speedUpgradeButton").disabled = false;
-          document.getElementById("speedUpgradeButton").textContent = "Buy Faster Rolls";
-        }
-      }
-      document.getElementById("secretCost").textContent = getUpgradeCost("secret");
-      document.getElementById("coinCost").textContent = getUpgradeCost("coin");
       document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
       document.getElementById("luckMultiplierText").textContent = getLuckMultiplier().toFixed(2) + "x";
       document.getElementById("luckWithDimisText").textContent = (getLuckMultiplier() * 1.2).toFixed(2) + "x";
@@ -1496,7 +1504,13 @@
       }
 
       if (isUpgradeMaxed(type)) {
-        alert("Faster Rolls is already at the max level!");
+        alert("This upgrade is already at the max level!");
+        updateCoinsAndShop();
+        return;
+      }
+
+      if (isUpgradeMaxed(type)) {
+        alert("This upgrade is already at the max level!");
         updateCoinsAndShop();
         return;
       }
