@@ -785,7 +785,7 @@
           <h3>🍀 Luck Boost</h3>
           <p>Level: <span id="luckLevel">0</span>/<span id="luckMax">100</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
-          <p class="upgrade-explain"><b>What it does:</b> increases your odds for Mythic, Secret, and Cheeter towers. It does not make common towers better; it helps the high rarity rolls show up more often. Max level is 100.</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> +4% roll weight per level for Mythic, Secret, and Cheeter towers. Example: level 10 = +40% weight for those high rarities. Max level is 100.</p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
           <button id="luckBuyButton" onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
@@ -794,7 +794,7 @@
           <h3>⚡ Faster Rolls</h3>
           <p>Level: <span id="speedLevel">0</span>/<span id="speedMax">20</span></p>
           <p>Makes the roll animation faster.</p>
-          <p class="upgrade-explain"><b>What it does:</b> makes each roll animation finish faster, so Auto Roll and manual rolling feel quicker. It does not change rarity odds. Max level is 20.</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> each level makes roll delays 6% shorter. The speed multiplier cannot go below 45%, so rolls cannot become too broken. Max level is 20.</p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedBuyButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
@@ -803,7 +803,7 @@
           <h3>🕵️ Secret Upgrade</h3>
           <p>Level: <span id="secretLevel">0</span>/<span id="secretMax">100</span></p>
           <p>Boosts secret and cheeter tier odds.</p>
-          <p class="upgrade-explain"><b>What it does:</b> gives an extra boost only to Secret and Cheeter-tier towers. It stacks with Luck Boost for the rarest finds. Max level is 100.</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> +12% roll weight per level for Secret towers and +15% roll weight per level for Cheeter towers. It stacks with Luck Boost. Max level is 100.</p>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
           <button id="secretBuyButton" onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
@@ -812,7 +812,7 @@
           <h3>💰 Coin Multiplier</h3>
           <p>Level: <span id="coinLevel">0</span>/<span id="coinMax">100</span></p>
           <p>Gives more Cheet Coins from every roll.</p>
-          <p class="upgrade-explain"><b>What it does:</b> increases how many Cheet Coins you earn from rolls and rewards. Higher levels make farming coins much faster. Max level is 100.</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> +0.25x coins per level. Formula: 1x + level × 0.25x. Example: level 4 = 2x coins. Max level is 100.</p>
           <p>Current multiplier: <span id="coinMultiplierText">1x</span></p>
           <p>Cost: <span id="coinCost">1000</span> coins</p>
           <button id="coinBuyButton" onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
@@ -832,12 +832,12 @@
           <h3>🙏 DIMIS Worship</h3>
           <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
-          <p class="upgrade-explain"><b>What it does:</b> spending coins gives +10 Worship Points. At 100 points, DIMIS gives one random reward, then the meter resets.</p>
+          <p class="upgrade-explain"><b>Exact effect:</b> each worship gives +10 Worship Points. At 100/100 points, you get 1 random DIMIS blessing for 15 minutes and the meter resets to 0. Worship cost uses gentle old scaling: 40 + total upgrade levels × 4 + floor(sqrt(current coins) / 350).</p>
           <div class="dimis-reward-list">
-            <div><b>🍀 Luck Blessing:</b> temporarily boosts Mythic, Secret, and Cheeter odds.</div>
-            <div><b>💰 Coin Blessing:</b> temporarily doubles coin rewards.</div>
-            <div><b>⚡ Speed Blessing:</b> temporarily makes rolls faster.</div>
-            <div><b>🌌 DIMIS Miracle:</b> gives a special rare blessing effect.</div>
+            <div><b>🍀 Luck Blessing:</b> 15 minutes of +20% roll weight for Mythic, Secret, and Cheeter towers.</div>
+            <div><b>💰 Coin Blessing:</b> 15 minutes of 2x Cheet Coins from rolls.</div>
+            <div><b>⚡ Speed Blessing:</b> 15 minutes of 20% faster rolls.</div>
+            <div><b>🌌 DIMIS Miracle:</b> 15 minutes of +35% roll weight for Secret and Cheeter towers.</div>
           </div>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
           <div class="worship-meter"><div id="worshipFill" class="worship-fill"></div></div>
@@ -1206,11 +1206,18 @@
     }
 
     function getBlessingDescription(type) {
-      if (type === "luck") return "Boosts Mythic, Secret, and Cheeter odds.";
-      if (type === "coins") return "Doubles Cheet Coin rewards.";
-      if (type === "speed") return "Makes rolls faster while active.";
-      if (type === "miracle") return "Special rare blessing effect from DIMIS.";
+      if (type === "luck") return "20% better weight for Mythic, Secret, and Cheeter towers.";
+      if (type === "coins") return "2x Cheet Coins from rolls while active.";
+      if (type === "speed") return "20% faster rolls while active.";
+      if (type === "miracle") return "35% better weight for Secret and Cheeter towers.";
       return "";
+    }
+
+    function formatTimeLeft(ms) {
+      let totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+      let minutes = Math.floor(totalSeconds / 60);
+      let seconds = totalSeconds % 60;
+      return minutes + "m " + String(seconds).padStart(2, "0") + "s";
     }
 
     function getBlessingTimeLeftText() {
@@ -1218,8 +1225,7 @@
       if (type === "none") return "No active blessing";
 
       let msLeft = activeBlessing.until - Date.now();
-      let minutes = Math.max(1, Math.ceil(msLeft / 60000));
-      return formatBlessingName(type) + " • " + getBlessingDescription(type) + " • about " + minutes + " minute(s) left";
+      return formatBlessingName(type) + " • " + getBlessingDescription(type) + " • time left: " + formatTimeLeft(msLeft);
     }
 
     function getUpgradeMax(type) {
@@ -1427,10 +1433,10 @@
 
         activeBlessing = {
           type: chosen,
-          until: Date.now() + 10 * 60 * 1000
+          until: Date.now() + 15 * 60 * 1000
         };
 
-        message = formatBlessingName(chosen) + " activated for 10 minutes! Worship meter reset to 0/100.";
+        message = formatBlessingName(chosen) + " activated for 15 minutes! Worship meter reset to 0/100.";
 
         unlockAchievement("dimisBlessing");
       }
