@@ -883,9 +883,10 @@
           <p>Level: <span id="speedLevel">0</span> / <span id="speedMaxLevelText">20</span></p>
           <p>Makes the roll animation faster.</p>
           <div class="upgrade-stat-list">
-            <div>Each level: +0.04x speed</div>
+            <div>Each level: +0.083x speed</div>
             <div>Current speed: <span id="speedMultiplierText">1.00x speed</span></div>
-            <div>With DIMIS Speed: <span id="speedWithDimisText">3.33x speed max</span></div>
+            <div>With DIMIS Speed: <span id="speedWithDimisText">1.25x speed</span></div>
+            <div>Max with DIMIS Speed: 3.33x speed</div>
           </div>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedUpgradeButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
@@ -1246,10 +1247,10 @@
     }
 
     function getSpeedMultiplier() {
-      let multiplier = 1 + upgrades.speed * 0.04;
+      let multiplier = 1 + upgrades.speed * 0.083;
 
-      if (multiplier > 3.33) {
-        multiplier = 3.33;
+      if (multiplier > 2.66) {
+        multiplier = 2.66;
       }
 
       return multiplier;
