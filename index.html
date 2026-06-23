@@ -837,7 +837,6 @@
             <div><b>🍀 Luck Blessing:</b> temporarily boosts Mythic, Secret, and Cheeter odds.</div>
             <div><b>💰 Coin Blessing:</b> temporarily doubles coin rewards.</div>
             <div><b>⚡ Speed Blessing:</b> temporarily makes rolls faster.</div>
-            <div><b>🎁 DIMIS Gift:</b> instantly gives bonus Cheet Coins.</div>
             <div><b>🌌 DIMIS Miracle:</b> gives a special rare blessing effect.</div>
           </div>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
@@ -1202,7 +1201,6 @@
       if (type === "luck") return "🍀 DIMIS Luck Blessing";
       if (type === "coins") return "💰 DIMIS Coin Blessing";
       if (type === "speed") return "⚡ DIMIS Speed Blessing";
-      if (type === "gift") return "🎁 DIMIS Gift";
       if (type === "miracle") return "🌌 DIMIS Miracle";
       return "No active blessing";
     }
@@ -1212,7 +1210,6 @@
       if (type === "coins") return "Doubles Cheet Coin rewards.";
       if (type === "speed") return "Makes rolls faster while active.";
       if (type === "miracle") return "Special rare blessing effect from DIMIS.";
-      if (type === "gift") return "Instant Cheet Coin reward.";
       return "";
     }
 
@@ -1425,21 +1422,15 @@
 
       if (dimisWorshipPoints >= 100) {
         dimisWorshipPoints = 0;
-        let blessings = ["luck", "coins", "speed", "gift", "miracle"];
+        let blessings = ["luck", "coins", "speed", "miracle"];
         let chosen = blessings[Math.floor(Math.random() * blessings.length)];
 
-        if (chosen === "gift") {
-          let giftCoins = 1000 + Math.floor(Math.random() * 2001);
-          cheetCoins += giftCoins;
-          activeBlessing = { type: "none", until: 0 };
-          message = "🎁 DIMIS Gift! You got +" + giftCoins + " Cheet Coins. Worship meter reset to 0/100.";
-        } else {
-          activeBlessing = {
-            type: chosen,
-            until: Date.now() + 10 * 60 * 1000
-          };
-          message = formatBlessingName(chosen) + " activated for 10 minutes! Worship meter reset to 0/100.";
-        }
+        activeBlessing = {
+          type: chosen,
+          until: Date.now() + 10 * 60 * 1000
+        };
+
+        message = formatBlessingName(chosen) + " activated for 10 minutes! Worship meter reset to 0/100.";
 
         unlockAchievement("dimisBlessing");
       }
