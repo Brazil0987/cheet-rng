@@ -2086,7 +2086,7 @@
       }
 
       if (isRolling) {
-        if (Date.now() - lastRollStartedTime > 10000) {
+        if (Date.now() - lastRollStartedTime > 12000) {
           isRolling = false;
           document.getElementById("rollButton").disabled = false;
         } else {
@@ -2123,6 +2123,7 @@
         } catch (error) {
           console.log("Roll failed:", error);
           isRolling = false;
+          lastRollStartedTime = 0;
           document.getElementById("rollButton").disabled = false;
           updateAutoRollButton();
         }
@@ -2192,9 +2193,11 @@
         updateAutoRollButton();
 
         if (autoRollEnabled && currentUser && hasUsername()) {
-          catchUpAutoRolls().catch(function(error) {
-            console.log("Auto Roll catch-up failed:", error);
-          });
+          setTimeout(function() {
+            if (autoRollEnabled && !isRolling) {
+              rollItem();
+            }
+          }, 250);
         }
       }
     }
@@ -2265,40 +2268,40 @@
       autoRollEnabled = true;
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
-
-      // Start one virtual roll immediately, then continue by catch-up timing.
-      lastAutoRollTime = Date.now() - getEstimatedAutoRollTime();
+      lastAutoRollTime = Date.now();
 
       updateAutoRollButton();
 
       if (autoRollInterval) {
         clearInterval(autoRollInterval);
-        autoRollInterval = null;
       }
 
-      if (autoRollTimeout) {
-        clearTimeout(autoRollTimeout);
-        autoRollTimeout = null;
-      }
-
-      if (catchUpInterval) {
-        clearInterval(catchUpInterval);
-      }
-
-      catchUpInterval = setInterval(function() {
+      autoRollInterval = setInterval(function() {
         if (!autoRollEnabled) return;
+        if (!currentUser || !hasUsername()) return;
 
-        catchUpAutoRolls().catch(function(error) {
-          console.log("Auto Roll catch-up failed:", error);
-        });
-      }, 1000);
+        if (isRolling && Date.now() - lastRollStartedTime > 12000) {
+          isRolling = false;
+          if (document.getElementById("rollButton")) {
+            document.getElementById("rollButton").disabled = false;
+          }
+        }
 
-      await saveAfkTimerNow().catch(function(error) {
+        if (!isRolling) {
+          rollItem();
+        }
+      }, 500);
+
+      if (!isRolling) {
+        rollItem();
+      }
+
+      saveAfkTimerNow().catch(function(error) {
         console.log("Saving Auto Roll timer failed:", error);
       });
 
-      catchUpAutoRolls().catch(function(error) {
-        console.log("Auto Roll catch-up failed:", error);
+      savePlayerData().catch(function(error) {
+        console.log("Save failed:", error);
       });
     }
 
@@ -2323,6 +2326,8 @@
       }
 
       isRolling = false;
+      lastRollStartedTime = 0;
+
       if (document.getElementById("rollButton")) {
         document.getElementById("rollButton").disabled = false;
       }
