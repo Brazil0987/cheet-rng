@@ -1127,12 +1127,11 @@
     let isRolling = false;
     let autoRollEnabled = false;
     let autoRollTimer = null;
+    let autoRollSaveTimer = null;
     let lastRollStartedTime = 0;
       updateAutoRollButton();
     let autoRollSaved = false;
     let autoRollSessionId = "";
-    let autoRollHeartbeat = 0;
-    let afkSaveInterval = null;
     let leaderboardData = {};
     let lastAutoRollTime = Date.now();
 
@@ -1786,6 +1785,8 @@
           });
         }, 600);
       }
+
+      
     }
 
     async function saveUsername() {
@@ -1835,7 +1836,6 @@
         activeBlessing: activeBlessing,
         autoRollSaved: autoRollSaved,
         autoRollSessionId: autoRollSessionId,
-        autoRollHeartbeat: autoRollHeartbeat,
         lastAutoRollTime: lastAutoRollTime
       });
     }
@@ -1845,16 +1845,18 @@
     async function saveAfkTimerNow() {
       if (!currentUser) return;
       if (!hasUsername()) return;
-      if (!autoRollEnabled) return;
+      if (!autoRollEnabled && !autoRollSaved) return;
+
+      if (!Number.isFinite(Number(lastAutoRollTime)) || Number(lastAutoRollTime) <= 0) {
+        lastAutoRollTime = Date.now();
+      }
 
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
-      autoRollHeartbeat = Date.now();
 
       await update(ref(database, "leaderboard/" + currentUser.uid), {
         autoRollSaved: true,
         autoRollSessionId: autoRollSessionId,
-        autoRollHeartbeat: autoRollHeartbeat,
         lastAutoRollTime: lastAutoRollTime
       });
     }
@@ -1870,7 +1872,6 @@
           const data = snapshot.val();
           autoRollSaved = data.autoRollSaved || false;
           autoRollSessionId = data.autoRollSessionId || "";
-          autoRollHeartbeat = data.autoRollHeartbeat || 0;
 
           if (data.lastAutoRollTime) {
             lastAutoRollTime = data.lastAutoRollTime;
@@ -2083,14 +2084,12 @@
         return;
       }
 
-      if (isRolling) {
-        if (Date.now() - lastRollStartedTime > 15000) {
-          isRolling = false;
-          document.getElementById("rollButton").disabled = false;
-        } else {
-          return;
-        }
+      if (items.length === 0) {
+        alert("No Cheet RNG items loaded!");
+        return;
       }
+
+      if (isRolling) return;
 
       isRolling = true;
       lastRollStartedTime = Date.now();
@@ -2104,96 +2103,91 @@
       document.getElementById("questionMarkImage").classList.add("rolling");
 
       function spin() {
-        try {
-          let randomItem = items[Math.floor(Math.random() * items.length)];
-          showRollingItem(randomItem);
+        let randomItem = items[Math.floor(Math.random() * items.length)];
+        showRollingItem(randomItem);
 
-          if (spinCount >= delays.length) {
-            let finalItem = getRandomItem();
-            finishRoll(finalItem);
-            return;
-          }
-
-          let delay = delays[spinCount];
-          spinCount++;
-
-          setTimeout(spin, delay);
-        } catch (error) {
-          console.log("Roll failed:", error);
-          isRolling = false;
-          lastRollStartedTime = 0;
-          document.getElementById("rollButton").disabled = false;
-          updateAutoRollButton();
+        if (spinCount >= delays.length) {
+          let finalItem = getRandomItem();
+          finishRoll(finalItem);
+          return;
         }
+
+        let delay = delays[spinCount];
+        spinCount++;
+
+        setTimeout(spin, delay);
       }
 
       spin();
     }
 
     function finishRoll(item) {
-      if (!item || !item.name || !Number.isFinite(Number(item.chance))) {
-        alert("Cheet data is broken. Try refreshing.");
+      try {
+        if (!item || !item.name || !Number.isFinite(Number(item.chance))) {
+          throw new Error("Cheet data is broken. Try refreshing.");
+        }
+
+        rolls++;
+        let coinReward = getCoinReward(item);
+        addCheetCoins(coinReward);
+
+        document.getElementById("rollCount").textContent = rolls;
+        document.getElementById("coinCount").textContent = cheetCoins;
+        if (document.getElementById("totalCoinCount")) document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
+        if (document.getElementById("hutTotalCoinCount")) document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
+
+        document.getElementById("resultName").textContent = item.name;
+        showResultImage(item.image);
+        document.getElementById("resultChance").textContent = formatChance(item.chance) + " • +" + coinReward + " coins";
+
+        showRarityAnnouncement(item);
+
+        if (item.name === "Pookowski") {
+          showPookowskiAnimation();
+        }
+
+        document.getElementById("resultName").classList.remove("rolling");
+        document.getElementById("resultImage").classList.remove("rolling");
+        document.getElementById("questionMarkImage").classList.remove("rolling");
+
+        inventory[item.name] = Number(inventory[item.name] || 0) + 1;
+
+        if (getBestScore(item) > bestScore || bestItem === "None") {
+          bestScore = getBestScore(item);
+          bestChance = item.chance;
+          bestItem = item.name;
+          document.getElementById("bestItem").textContent = bestItem;
+        }
+
+        checkAchievements(item);
+        updateTowers();
+        updateAchievements();
+        updateCoinsAndShop();
+
+        lastAutoRollTime = Date.now();
+
+        if (autoRollEnabled) {
+          autoRollSaved = true;
+          autoRollSessionId = pageSessionId;
+          saveAfkTimerNow().catch(function(error) {
+            console.log("AFK timer save failed:", error);
+          });
+        }
+
+        savePlayerData().catch(function(error) {
+          console.log("Save failed:", error);
+        });
+      } catch (error) {
+        console.log("Finish roll failed:", error);
+      } finally {
         isRolling = false;
-        document.getElementById("rollButton").disabled = false;
-        return;
-      }
+        lastRollStartedTime = 0;
 
-      rolls++;
-      let coinReward = getCoinReward(item);
-      addCheetCoins(coinReward);
+        if (currentUser && hasUsername()) {
+          document.getElementById("rollButton").disabled = false;
+        }
 
-      document.getElementById("rollCount").textContent = rolls;
-      document.getElementById("coinCount").textContent = cheetCoins;
-      if (document.getElementById("totalCoinCount")) document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
-      if (document.getElementById("hutTotalCoinCount")) document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
-
-      document.getElementById("resultName").textContent = item.name;
-      showResultImage(item.image);
-      document.getElementById("resultChance").textContent = formatChance(item.chance) + " • +" + coinReward + " coins";
-
-      showRarityAnnouncement(item);
-
-      if (item.name === "Pookowski") {
-        showPookowskiAnimation();
-      }
-
-      document.getElementById("resultName").classList.remove("rolling");
-      document.getElementById("resultImage").classList.remove("rolling");
-      document.getElementById("questionMarkImage").classList.remove("rolling");
-
-      inventory[item.name] = Number(inventory[item.name] || 0) + 1;
-
-      if (getBestScore(item) > bestScore || bestItem === "None") {
-        bestScore = getBestScore(item);
-        bestChance = Number(item.chance);
-        bestItem = item.name;
-        document.getElementById("bestItem").textContent = bestItem;
-      }
-
-      checkAchievements(item);
-      updateTowers();
-      updateAchievements();
-      updateCoinsAndShop();
-
-      lastAutoRollTime = Date.now();
-
-      savePlayerData().catch(function(error) {
-        alert("Save failed: " + error.message);
-        console.log("Save failed:", error);
-      });
-
-      isRolling = false;
-
-      if (currentUser && hasUsername()) {
-        document.getElementById("rollButton").disabled = false;
-      }
-
-      if (autoRollEnabled && currentUser && hasUsername()) {
-        setTimeout(function() {
-          if (!isRolling && autoRollEnabled) {
-            rollItem();
-          }
-        }, 50);
+        updateAutoRollButton();
       }
     }
 
@@ -2201,6 +2195,8 @@
     function updateAutoRollButton() {
       let button = document.getElementById("autoRollButton");
       if (!button) return;
+
+      button.classList.add("auto-toggle-button");
 
       if (autoRollEnabled) {
         button.textContent = "AUTOROLL: ON";
@@ -2236,87 +2232,109 @@
       return totalDelay;
     }
 
-    async function startAutoRoll() {
+    function startAutoRoll() {
       if (!currentUser) {
         alert("Sign in first!");
+        updateAutoRollButton();
         return;
       }
 
       if (!hasUsername()) {
         alert("Choose a username first!");
         document.getElementById("usernameBox").style.display = "block";
+        updateAutoRollButton();
         return;
       }
 
       autoRollEnabled = true;
-      updateAutoRollButton();
       autoRollSaved = true;
-      updateAutoRollButton();
       autoRollSessionId = pageSessionId;
-      autoRollHeartbeat = Date.now();
       lastAutoRollTime = Date.now();
 
-      update(ref(database, "leaderboard/" + currentUser.uid), {
-        autoRollSaved: true,
-        autoRollSessionId: autoRollSessionId,
-        autoRollHeartbeat: autoRollHeartbeat,
-        lastAutoRollTime: lastAutoRollTime
-      }).then(function() {
-        console.log("AFK auto-roll timer saved.");
-      }).catch(function(error) {
-        console.log("Auto-roll save failed:", error);
-      });
+      updateAutoRollButton();
 
-      startAfkSaveLoop();
-
-      if (!isRolling) {
-        rollItem();
+      if (autoRollTimer) {
+        clearInterval(autoRollTimer);
       }
 
-      updateAutoRollButton();
-    }
-
-    function stopAutoRoll() {
-      stopAfkSaveLoop();
-      autoRollEnabled = false;
-      autoRollSaved = false;
-      updateAutoRollButton();
-      autoRollSessionId = "";
-      autoRollHeartbeat = 0;
-      lastAutoRollTime = Date.now();
-
-      if (currentUser) {
-        update(ref(database, "leaderboard/" + currentUser.uid), {
-          autoRollSaved: false,
-          autoRollSessionId: "",
-          autoRollHeartbeat: 0,
-          lastAutoRollTime: lastAutoRollTime
-        }).catch(function(error) {
-          console.log("Auto-roll stop save failed:", error);
-        });
+      if (autoRollSaveTimer) {
+        clearInterval(autoRollSaveTimer);
       }
 
-      updateAutoRollButton();
-    }
+      autoRollTimer = setInterval(function() {
+        if (!autoRollEnabled) return;
+        if (!currentUser || !hasUsername()) return;
 
-    async function startAfkSaveLoop() {
-      if (afkSaveInterval) {
-        clearInterval(afkSaveInterval);
-      }
+        if (isRolling && Date.now() - lastRollStartedTime > 20000) {
+          isRolling = false;
+          if (document.getElementById("rollButton")) {
+            document.getElementById("rollButton").disabled = false;
+          }
+        }
 
-      afkSaveInterval = setInterval(function() {
+        if (!isRolling) {
+          rollItem();
+        }
+      }, 500);
+
+      autoRollSaveTimer = setInterval(function() {
         if (autoRollEnabled && currentUser && hasUsername()) {
           saveAfkTimerNow().catch(function(error) {
             console.log("AFK timer save failed:", error);
           });
         }
-      }, 15000);
+      }, 5000);
+
+      if (!isRolling) {
+        rollItem();
+      }
+
+      saveAfkTimerNow().catch(function(error) {
+        console.log("AFK timer save failed:", error);
+      });
+
+      savePlayerData().catch(function(error) {
+        console.log("Save failed:", error);
+      });
     }
 
-    function stopAfkSaveLoop() {
-      if (afkSaveInterval) {
-        clearInterval(afkSaveInterval);
-        afkSaveInterval = null;
+    function stopAutoRoll() {
+      autoRollEnabled = false;
+      autoRollSaved = false;
+      autoRollSessionId = "";
+
+      if (autoRollTimer) {
+        clearInterval(autoRollTimer);
+        autoRollTimer = null;
+      }
+
+      if (autoRollSaveTimer) {
+        clearInterval(autoRollSaveTimer);
+        autoRollSaveTimer = null;
+      }
+
+      if (!isRolling) {
+        lastRollStartedTime = 0;
+
+        if (document.getElementById("rollButton")) {
+          document.getElementById("rollButton").disabled = false;
+        }
+      }
+
+      updateAutoRollButton();
+
+      if (currentUser && hasUsername()) {
+        update(ref(database, "leaderboard/" + currentUser.uid), {
+          autoRollSaved: false,
+          autoRollSessionId: "",
+          lastAutoRollTime: Date.now()
+        }).catch(function(error) {
+          console.log("Stopping Auto Roll save failed:", error);
+        });
+
+        savePlayerData().catch(function(error) {
+          console.log("Save failed:", error);
+        });
       }
     }
 
@@ -2327,51 +2345,38 @@
 
       await refreshAfkTimerFromFirebase();
 
-      if (!autoRollEnabled && !autoRollSaved) return;
+      if (!autoRollSaved) return;
 
       let now = Date.now();
-      let heartbeatLimit = 2 * 60 * 1000;
+      let estimatedRollTime = Number(getEstimatedAutoRollTime());
 
-      if (autoRollSaved && autoRollHeartbeat && now - autoRollHeartbeat > heartbeatLimit) {
-        autoRollSaved = false;
-        autoRollSessionId = "";
-        autoRollHeartbeat = 0;
-        lastAutoRollTime = now;
-
-        update(ref(database, "leaderboard/" + currentUser.uid), {
-          autoRollSaved: false,
-          autoRollSessionId: "",
-          autoRollHeartbeat: 0,
-          lastAutoRollTime: lastAutoRollTime
-        }).catch(function(error) {
-          console.log("Clearing stale AFK heartbeat failed:", error);
-        });
-
-        return;
+      if (!Number.isFinite(estimatedRollTime) || estimatedRollTime <= 0) {
+        estimatedRollTime = 3000;
       }
 
-      let estimatedRollTime = 4000 - upgrades.speed * 200;
-
-      if (estimatedRollTime < 2200) {
-        estimatedRollTime = 2200;
+      let savedTime = Number(lastAutoRollTime);
+      if (!Number.isFinite(savedTime) || savedTime <= 0) {
+        savedTime = now;
       }
 
-      let maxAfkTime = 12 * 60 * 60 * 1000; // 12 hours
-      let afkTime = now - lastAutoRollTime;
+      let maxAfkTime = 12 * 60 * 60 * 1000;
+      let afkTime = now - savedTime;
 
-      if (afkTime > maxAfkTime) {
-        afkTime = maxAfkTime;
-      }
+      if (!Number.isFinite(afkTime) || afkTime < 0) afkTime = 0;
+      if (afkTime > maxAfkTime) afkTime = maxAfkTime;
 
       let missedRolls = Math.floor(afkTime / estimatedRollTime);
 
-      if (missedRolls <= 0) return;
+      if (!Number.isFinite(missedRolls) || missedRolls <= 0) {
+        autoRollEnabled = true;
+        autoRollSaved = true;
+        autoRollSessionId = pageSessionId;
+        updateAutoRollButton();
+        startAutoRoll();
+        return;
+      }
 
       lastAutoRollTime = now;
-      if (autoRollSaved) {
-        autoRollSessionId = pageSessionId;
-        autoRollHeartbeat = Date.now();
-      }
 
       let bestCaughtItem = null;
       let caughtPookowski = false;
@@ -2385,11 +2390,7 @@
         addCheetCoins(coinReward);
         totalCoinReward += coinReward;
 
-        if (inventory[item.name]) {
-          inventory[item.name]++;
-        } else {
-          inventory[item.name] = 1;
-        }
+        inventory[item.name] = Number(inventory[item.name] || 0) + 1;
 
         if (getBestScore(item) > bestScore || bestItem === "None") {
           bestScore = getBestScore(item);
@@ -2408,48 +2409,42 @@
         checkAchievements(item);
       }
 
+      autoRollEnabled = true;
+      autoRollSaved = true;
+      autoRollSessionId = pageSessionId;
+
       document.getElementById("rollCount").textContent = rolls;
       document.getElementById("coinCount").textContent = cheetCoins;
-      document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
+      if (document.getElementById("totalCoinCount")) document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
+      if (document.getElementById("hutTotalCoinCount")) document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
       document.getElementById("bestItem").textContent = bestItem;
 
       updateTowers();
       updateAchievements();
       updateCoinsAndShop();
+      updateAutoRollButton();
 
       savePlayerData().catch(function(error) {
         console.log("Save failed:", error);
       });
 
-      document.getElementById("resultName").textContent = "Auto roll caught up!";
-      document.getElementById("resultChance").textContent = "+" + missedRolls + " rolls while AFK • +" + totalCoinReward + " coins";
+      update(ref(database, "leaderboard/" + currentUser.uid), {
+        autoRollSaved: true,
+        autoRollSessionId: autoRollSessionId,
+        lastAutoRollTime: lastAutoRollTime
+      }).catch(function(error) {
+        console.log("AFK timer update failed:", error);
+      });
+
+      document.getElementById("resultName").textContent = "Auto Roll Catch-up!";
+      document.getElementById("resultChance").textContent = "+" + missedRolls + " AFK rolls • +" + totalCoinReward + " coins";
       showAfkCatchupPopup(missedRolls, totalCoinReward);
 
-      if (bestCaughtItem) {
-        showResultImage(bestCaughtItem.image);
-      }
+      if (bestCaughtItem) showResultImage(bestCaughtItem.image);
+      if (bestCaughtItem && bestCaughtItem.chance >= 1000) showRarityAnnouncement(bestCaughtItem);
+      if (caughtPookowski) showPookowskiAnimation();
 
-      if (bestCaughtItem && bestCaughtItem.chance >= 1000) {
-        showRarityAnnouncement(bestCaughtItem);
-      }
-
-      if (caughtPookowski) {
-        showPookowskiAnimation();
-      }
-
-      let wasAutoRolling = autoRollEnabled;
-      autoRollEnabled = false;
-
-      setTimeout(function() {
-        if (wasAutoRolling && currentUser && hasUsername()) {
-          autoRollEnabled = true;
-          startAfkSaveLoop();
-
-          if (!isRolling) {
-            rollItem();
-          }
-        }
-      }, 4000);
+      startAutoRoll();
     }
 
     document.addEventListener("visibilitychange", function() {
@@ -2472,12 +2467,10 @@
       if (autoRollEnabled && currentUser && hasUsername()) {
         autoRollSaved = true;
         autoRollSessionId = pageSessionId;
-        autoRollHeartbeat = Date.now();
 
         update(ref(database, "leaderboard/" + currentUser.uid), {
           autoRollSaved: true,
           autoRollSessionId: autoRollSessionId,
-          autoRollHeartbeat: autoRollHeartbeat,
           lastAutoRollTime: lastAutoRollTime
         }).catch(function(error) {
           console.log("Close AFK save failed:", error);
