@@ -837,7 +837,7 @@
   <div id="rollPage">
     <div class="roll-controls">
       <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
-      <button id="autoRollButton" class="auto-toggle-button off" onclick="toggleAutoRoll()">AUTOROLL: OFF</button>
+      <button id="autoRollButton" class="auto-toggle-button off" onclick="window.toggleAutoRoll()">AUTOROLL: OFF</button>
     </div>
 
     <div class="result-box">
@@ -1127,6 +1127,7 @@
     let isRolling = false;
     let autoRollEnabled = false;
     let autoRollInterval = null;
+    let autoRollTimeout = null;
       updateAutoRollButton();
     let autoRollSaved = false;
     let autoRollSessionId = "";
@@ -2165,16 +2166,39 @@
       }
 
       if (autoRollEnabled && currentUser && hasUsername()) {
-        setTimeout(function() {
-          if (!isRolling && autoRollEnabled) {
-            rollItem();
-          }
-        }, 75);
+        if (autoRollTimeout) {
+          clearTimeout(autoRollTimeout);
+        }
+        autoRollTimeout = setTimeout(autoRollTick, 75);
       }
 
       updateAutoRollButton();
     }
 
+
+    function autoRollTick() {
+      if (!autoRollEnabled) return;
+
+      if (!currentUser || !hasUsername()) {
+        stopAutoRoll();
+        return;
+      }
+
+      if (!isRolling) {
+        try {
+          rollItem();
+        } catch (error) {
+          console.log("Auto Roll failed:", error);
+          isRolling = false;
+        }
+      }
+
+      if (autoRollTimeout) {
+        clearTimeout(autoRollTimeout);
+      }
+
+      autoRollTimeout = setTimeout(autoRollTick, 500);
+    }
 
     function updateAutoRollButton() {
       let button = document.getElementById("autoRollButton");
@@ -2220,19 +2244,15 @@
 
       if (autoRollInterval) {
         clearInterval(autoRollInterval);
+        autoRollInterval = null;
       }
 
-      autoRollInterval = setInterval(function() {
-        if (!autoRollEnabled) return;
-        if (!currentUser || !hasUsername()) return;
-        if (!isRolling) {
-          rollItem();
-        }
-      }, 250);
-
-      if (!isRolling) {
-        rollItem();
+      if (autoRollTimeout) {
+        clearTimeout(autoRollTimeout);
+        autoRollTimeout = null;
       }
+
+      autoRollTick();
 
       savePlayerData().catch(function(error) {
         console.log("Save failed:", error);
@@ -2245,6 +2265,11 @@
       if (autoRollInterval) {
         clearInterval(autoRollInterval);
         autoRollInterval = null;
+      }
+
+      if (autoRollTimeout) {
+        clearTimeout(autoRollTimeout);
+        autoRollTimeout = null;
       }
 
       updateAutoRollButton();
@@ -2630,6 +2655,7 @@ let sortedItems = [...items].sort(function(a, b) {
     window.stopAutoRoll = stopAutoRoll;
     window.toggleAutoRoll = toggleAutoRoll;
         window.updateAutoRollButton = updateAutoRollButton;
+    window.autoRollTick = autoRollTick;
 window.showPage = showPage;
     window.buyUpgrade = buyUpgrade;
     window.claimHutReward = claimHutReward;
