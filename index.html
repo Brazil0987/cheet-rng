@@ -802,7 +802,7 @@
           <h3>🙏 DIMIS Worship</h3>
           <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
-          <p class="upgrade-explain">Each worship gives +10 points. The price scales up every time you worship. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
+          <p class="upgrade-explain">Each worship gives +10 points. The price scales up every 10 worships. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
           <div class="worship-meter"><div id="worshipFill" class="worship-fill"></div></div>
           <p>Worship Points: <span id="worshipPointsText">0</span>/100</p>
@@ -1343,7 +1343,8 @@
     }
 
     function getDimisWorshipCost() {
-      return Math.floor(250 * Math.pow(1.18, dimisWorshipCount));
+      let scaleStep = Math.floor(dimisWorshipCount / 10);
+      return Math.floor(250 * Math.pow(1.25, scaleStep));
     }
 
     async function worshipDimis() {
@@ -1369,7 +1370,7 @@
 
       unlockAchievement("firstWorship");
 
-      let message = "🙏 You worshipped DIMIS for " + cost + " coins. +10 Worship Points. (" + dimisWorshipPoints + "/100)";
+      let message = "🙏 You worshipped DIMIS for " + cost + " coins. +10 Worship Points. (" + dimisWorshipPoints + "/100). Price scales every 10 worships.";
 
       if (dimisWorshipPoints >= 100) {
         dimisWorshipPoints = 0;
