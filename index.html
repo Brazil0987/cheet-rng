@@ -593,6 +593,74 @@
       50% { transform: scale(1.08); color: #00ff66; }
       100% { transform: scale(1); color: white; }
     }
+  
+    .auto-button {
+      min-width: 170px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #0b1c0f, #111, #260909);
+      border-color: #49ff5a;
+      color: #49ff5a;
+      text-shadow: 0 0 8px #49ff5a;
+    }
+
+    .auto-button.auto-on {
+      background: linear-gradient(135deg, #09260f, #111, #103a19);
+      border-color: #49ff5a;
+      color: #b6ffbe;
+      box-shadow: 0 0 18px #49ff5a, inset 0 0 14px #49ff5a33;
+    }
+
+    .auto-button.auto-off {
+      background: linear-gradient(135deg, #190707, #111, #071909);
+      border-color: #ff3030;
+      color: #ff8080;
+      box-shadow: 0 0 14px #ff3030, inset 0 0 10px #ff303033;
+      text-shadow: 0 0 8px #ff3030;
+    }
+
+    #raritiesPage .rarity-info-card,
+    #raritiesPage .rarity-info-card.common,
+    #raritiesPage .rarity-info-card.rare,
+    #raritiesPage .rarity-info-card.epic,
+    #raritiesPage .rarity-info-card.legendary,
+    #raritiesPage .rarity-info-card.mythic,
+    #raritiesPage .rarity-info-card.secret,
+    #raritiesPage .rarity-info-card.cheeter {
+      background: linear-gradient(135deg, #101010, #242424) !important;
+      border-color: #777 !important;
+      color: #ddd !important;
+      box-shadow: 0 0 14px #555 !important;
+      text-shadow: none !important;
+    }
+
+  
+    .upgrade-explain {
+      color: #cfcfcf;
+      font-size: 13px;
+      line-height: 1.35;
+      margin: 6px 0;
+    }
+
+    .max-note {
+      color: #ff8080;
+      font-size: 13px;
+      font-weight: bold;
+      text-shadow: 0 0 6px #ff3030;
+    }
+
+    .dimis-worship-img {
+      width: 95px;
+      height: 95px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #49ff5a;
+      box-shadow: 0 0 18px #49ff5a, 0 0 22px #ff3030;
+      background: #050505;
+      margin: 6px auto 8px;
+      display: block;
+    }
+
   </style>
 </head>
 
@@ -647,8 +715,7 @@
 
   <div id="rollPage">
     <button id="rollButton" class="roll-button" onclick="rollItem()" disabled>ROLL</button>
-    <button class="auto-button" onclick="startAutoRoll()">AUTO ROLL</button>
-    <button class="stop-button" onclick="stopAutoRoll()">STOP</button>
+    <button id="autoRollButton" class="auto-button auto-off" onclick="toggleAutoRoll()">AUTO ROLL: OFF</button>
 
     <div class="result-box">
       <div id="resultName">Sign in to roll!</div>
@@ -687,35 +754,39 @@
       <div class="shop-grid">
         <div class="shop-card">
           <h3>🍀 Luck Boost</h3>
-          <p>Level: <span id="luckLevel">0</span></p>
+          <p>Level: <span id="luckLevel">0</span>/<span id="luckMax">100</span></p>
           <p>Boosts mythic, secret, and cheeter odds.</p>
+          <p class="upgrade-explain">Each level makes rare high-tier towers easier to hit. Max level is 100.</p>
           <p>Cost: <span id="luckCost">500</span> coins</p>
-          <button onclick="buyUpgrade('luck')">Buy Luck Boost</button>
+          <button id="luckBuyButton" onclick="buyUpgrade('luck')">Buy Luck Boost</button>
         </div>
 
         <div class="shop-card">
           <h3>⚡ Faster Rolls</h3>
-          <p>Level: <span id="speedLevel">0</span></p>
+          <p>Level: <span id="speedLevel">0</span>/<span id="speedMax">20</span></p>
           <p>Makes the roll animation faster.</p>
+          <p class="upgrade-explain">Each level shortens the roll animation. This upgrade caps at level 20 so rolling does not break.</p>
           <p>Cost: <span id="speedCost">750</span> coins</p>
-          <button onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
+          <button id="speedBuyButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
         </div>
 
         <div class="shop-card">
           <h3>🕵️ Secret Upgrade</h3>
-          <p>Level: <span id="secretLevel">0</span></p>
+          <p>Level: <span id="secretLevel">0</span>/<span id="secretMax">100</span></p>
           <p>Boosts secret and cheeter tier odds.</p>
+          <p class="upgrade-explain">This is a stronger bonus for the rarest towers. Max level is 100.</p>
           <p>Cost: <span id="secretCost">2500</span> coins</p>
-          <button onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
+          <button id="secretBuyButton" onclick="buyUpgrade('secret')">Buy Secret Upgrade</button>
         </div>
 
         <div class="shop-card">
           <h3>💰 Coin Multiplier</h3>
-          <p>Level: <span id="coinLevel">0</span></p>
+          <p>Level: <span id="coinLevel">0</span>/<span id="coinMax">100</span></p>
           <p>Gives more Cheet Coins from every roll.</p>
+          <p class="upgrade-explain">Each level increases coin rewards. Max level is 100.</p>
           <p>Current multiplier: <span id="coinMultiplierText">1x</span></p>
           <p>Cost: <span id="coinCost">1000</span> coins</p>
-          <button onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
+          <button id="coinBuyButton" onclick="buyUpgrade('coin')">Buy Coin Multiplier</button>
         </div>
 
         <div class="shop-card">
@@ -729,7 +800,9 @@
 
         <div class="shop-card">
           <h3>🙏 DIMIS Worship</h3>
+          <img class="dimis-worship-img" src="DIMIS_PLAYZ.png" alt="DIMIS">
           <p>Spend coins to fill the Worship Meter.</p>
+          <p class="upgrade-explain">Each worship gives +10 points. At 100 points, DIMIS gives a random blessing or gift, then the meter starts again.</p>
           <p>Cost: <span id="worshipCost">250</span> coins</p>
           <div class="worship-meter"><div id="worshipFill" class="worship-fill"></div></div>
           <p>Worship Points: <span id="worshipPointsText">0</span>/100</p>
@@ -910,6 +983,8 @@
 
     let cheetCoins = 0;
     let upgrades = { luck: 0, speed: 0, secret: 0, coin: 0 };
+    const MAX_SPEED_LEVEL = 20;
+    const MAX_UPGRADE_LEVEL = 100;
     let lastHutReward = 0;
     let hutStreak = 0;
     let dimisWorshipPoints = 0;
@@ -1104,7 +1179,30 @@
       return formatBlessingName(type) + " • about " + minutes + " minute(s) left";
     }
 
+    function getUpgradeMax(type) {
+      if (type === "speed") return MAX_SPEED_LEVEL;
+      return MAX_UPGRADE_LEVEL;
+    }
+
+    function isUpgradeMaxed(type) {
+      return (upgrades[type] || 0) >= getUpgradeMax(type);
+    }
+
+    function clampUpgrades() {
+      if (!upgrades) upgrades = { luck: 0, speed: 0, secret: 0, coin: 0 };
+      if (upgrades.luck === undefined) upgrades.luck = 0;
+      if (upgrades.speed === undefined) upgrades.speed = 0;
+      if (upgrades.secret === undefined) upgrades.secret = 0;
+      if (upgrades.coin === undefined) upgrades.coin = 0;
+
+      upgrades.luck = Math.min(Math.max(Number(upgrades.luck) || 0, 0), MAX_UPGRADE_LEVEL);
+      upgrades.speed = Math.min(Math.max(Number(upgrades.speed) || 0, 0), MAX_SPEED_LEVEL);
+      upgrades.secret = Math.min(Math.max(Number(upgrades.secret) || 0, 0), MAX_UPGRADE_LEVEL);
+      upgrades.coin = Math.min(Math.max(Number(upgrades.coin) || 0, 0), MAX_UPGRADE_LEVEL);
+    }
+
     function getUpgradeCost(type) {
+      if (isUpgradeMaxed(type)) return Infinity;
       if (type === "luck") return 500 + upgrades.luck * 500;
       if (type === "speed") return 750 + upgrades.speed * 750;
       if (type === "secret") return 2500 + upgrades.secret * 2500;
@@ -1113,6 +1211,8 @@
     }
 
     function updateCoinsAndShop() {
+      clampUpgrades();
+
       document.getElementById("coinCount").textContent = cheetCoins;
       document.getElementById("hutCoinCount").textContent = cheetCoins;
 
@@ -1121,10 +1221,35 @@
       document.getElementById("secretLevel").textContent = upgrades.secret;
       document.getElementById("coinLevel").textContent = upgrades.coin;
 
-      document.getElementById("luckCost").textContent = getUpgradeCost("luck");
-      document.getElementById("speedCost").textContent = getUpgradeCost("speed");
-      document.getElementById("secretCost").textContent = getUpgradeCost("secret");
-      document.getElementById("coinCost").textContent = getUpgradeCost("coin");
+      if (document.getElementById("luckMax")) document.getElementById("luckMax").textContent = MAX_UPGRADE_LEVEL;
+      if (document.getElementById("speedMax")) document.getElementById("speedMax").textContent = MAX_SPEED_LEVEL;
+      if (document.getElementById("secretMax")) document.getElementById("secretMax").textContent = MAX_UPGRADE_LEVEL;
+      if (document.getElementById("coinMax")) document.getElementById("coinMax").textContent = MAX_UPGRADE_LEVEL;
+
+      function updateUpgradeButton(type, label) {
+        let costElement = document.getElementById(type + "Cost");
+        let button = document.getElementById(type + "BuyButton");
+
+        if (isUpgradeMaxed(type)) {
+          if (costElement) costElement.textContent = "MAX";
+          if (button) {
+            button.disabled = true;
+            button.textContent = label + " MAXED";
+          }
+        } else {
+          if (costElement) costElement.textContent = getUpgradeCost(type);
+          if (button) {
+            button.disabled = false;
+            button.textContent = label;
+          }
+        }
+      }
+
+      updateUpgradeButton("luck", "Buy Luck Boost");
+      updateUpgradeButton("speed", "Buy Faster Rolls");
+      updateUpgradeButton("secret", "Buy Secret Upgrade");
+      updateUpgradeButton("coin", "Buy Coin Multiplier");
+
       document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
 
       document.getElementById("hutStreakCount").textContent = hutStreak;
@@ -1156,6 +1281,14 @@
         return;
       }
 
+      clampUpgrades();
+
+      if (isUpgradeMaxed(type)) {
+        alert("This upgrade is already maxed!");
+        updateCoinsAndShop();
+        return;
+      }
+
       let cost = getUpgradeCost(type);
 
       if (cheetCoins < cost) {
@@ -1165,6 +1298,8 @@
 
       cheetCoins -= cost;
       upgrades[type]++;
+
+      clampUpgrades();
 
       unlockAchievement("firstUpgrade");
       if (type === "coin") unlockAchievement("coinMultiplier");
@@ -1221,9 +1356,14 @@
 
       cheetCoins -= cost;
       dimisWorshipPoints += 10;
+
+      if (dimisWorshipPoints > 100) {
+        dimisWorshipPoints = 100;
+      }
+
       unlockAchievement("firstWorship");
 
-      let message = "🙏 You worshipped DIMIS. +10 Worship Points.";
+      let message = "🙏 You worshipped DIMIS. +10 Worship Points. (" + dimisWorshipPoints + "/100)";
 
       if (dimisWorshipPoints >= 100) {
         dimisWorshipPoints = 0;
@@ -1234,13 +1374,13 @@
           let giftCoins = 1000 + Math.floor(Math.random() * 2001);
           cheetCoins += giftCoins;
           activeBlessing = { type: "none", until: 0 };
-          message = "🎁 DIMIS Gift! You got +" + giftCoins + " Cheet Coins.";
+          message = "🎁 DIMIS Gift! You got +" + giftCoins + " Cheet Coins. Worship meter reset to 0/100.";
         } else {
           activeBlessing = {
             type: chosen,
             until: Date.now() + 10 * 60 * 1000
           };
-          message = formatBlessingName(chosen) + " activated for 10 minutes!";
+          message = formatBlessingName(chosen) + " activated for 10 minutes! Worship meter reset to 0/100.";
         }
 
         unlockAchievement("dimisBlessing");
@@ -1339,6 +1479,7 @@
         if (upgrades.secret === undefined) upgrades.secret = 0;
         if (upgrades.coin === undefined) upgrades.coin = 0;
         if (!activeBlessing.type) activeBlessing = { type: "none", until: 0 };
+        clampUpgrades();
 
         recalculateBestFromInventory();
       } else {
@@ -1435,6 +1576,7 @@
 
     async function savePlayerData() {
       if (!currentUser) return;
+      clampUpgrades();
 
       await set(ref(database, "leaderboard/" + currentUser.uid), {
         uid: currentUser.uid,
@@ -1670,6 +1812,8 @@
         240, 275, 315, 360, 410, 470, 540, 620
       ];
 
+      clampUpgrades();
+
       let speedMultiplier = 1 - upgrades.speed * 0.06;
 
       if (getActiveBlessingType() === "speed") {
@@ -1788,15 +1932,40 @@
       }
     }
 
-    async function startAutoRoll() {
+    async function updateAutoRollButton() {
+      let button = document.getElementById("autoRollButton");
+      if (!button) return;
+
+      if (autoRollEnabled) {
+        button.textContent = "AUTO ROLL: ON";
+        button.classList.add("auto-on");
+        button.classList.remove("auto-off");
+      } else {
+        button.textContent = "AUTO ROLL: OFF";
+        button.classList.add("auto-off");
+        button.classList.remove("auto-on");
+      }
+    }
+
+    function toggleAutoRoll() {
+      if (autoRollEnabled) {
+        stopAutoRoll();
+      } else {
+        startAutoRoll();
+      }
+    }
+
+    function startAutoRoll() {
       if (!currentUser) {
         alert("Sign in first!");
+        updateAutoRollButton();
         return;
       }
 
       if (!hasUsername()) {
         alert("Choose a username first!");
         document.getElementById("usernameBox").style.display = "block";
+        updateAutoRollButton();
         return;
       }
 
@@ -1804,6 +1973,7 @@
       autoRollSaved = true;
       autoRollSessionId = pageSessionId;
       lastAutoRollTime = Date.now();
+      updateAutoRollButton();
 
       update(ref(database, "leaderboard/" + currentUser.uid), {
         autoRollSaved: true,
@@ -1825,6 +1995,7 @@
       autoRollSaved = false;
       autoRollSessionId = "";
       lastAutoRollTime = Date.now();
+      updateAutoRollButton();
 
       if (currentUser) {
         update(ref(database, "leaderboard/" + currentUser.uid), {
@@ -2199,6 +2370,8 @@ let sortedItems = [...items].sort(function(a, b) {
     window.rollItem = rollItem;
     window.startAutoRoll = startAutoRoll;
     window.stopAutoRoll = stopAutoRoll;
+    window.toggleAutoRoll = toggleAutoRoll;
+    window.updateAutoRollButton = updateAutoRollButton;
     window.showPage = showPage;
     window.buyUpgrade = buyUpgrade;
     window.claimHutReward = claimHutReward;
@@ -2210,6 +2383,7 @@ let sortedItems = [...items].sort(function(a, b) {
     updateAchievements();
     updateCoinsAndShop();
     updateLeaderboard();
+    updateAutoRollButton();
   </script>
 
 </body>
