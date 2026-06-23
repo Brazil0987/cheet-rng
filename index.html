@@ -1125,6 +1125,7 @@
     let bestScore = 0;
     let bestItem = "None";
     let isRolling = false;
+    let lastRollStartedTime = 0;
     let autoRollEnabled = false;
     let autoRollInterval = null;
     let autoRollTimeout = null;
@@ -2083,9 +2084,17 @@
         return;
       }
 
-      if (isRolling) return;
+      if (isRolling) {
+        if (Date.now() - lastRollStartedTime > 10000) {
+          isRolling = false;
+          document.getElementById("rollButton").disabled = false;
+        } else {
+          return;
+        }
+      }
 
       isRolling = true;
+      lastRollStartedTime = Date.now();
       document.getElementById("rollButton").disabled = true;
 
       let spinCount = 0;
@@ -2096,83 +2105,98 @@
       document.getElementById("questionMarkImage").classList.add("rolling");
 
       function spin() {
-        let randomItem = items[Math.floor(Math.random() * items.length)];
-        showRollingItem(randomItem);
+        try {
+          let randomItem = items[Math.floor(Math.random() * items.length)];
+          showRollingItem(randomItem);
 
-        if (spinCount >= delays.length) {
-          let finalItem = getRandomItem();
-          finishRoll(finalItem);
-          return;
+          if (spinCount >= delays.length) {
+            let finalItem = getRandomItem();
+            finishRoll(finalItem);
+            return;
+          }
+
+          let delay = delays[spinCount];
+          spinCount++;
+
+          setTimeout(spin, delay);
+        } catch (error) {
+          console.log("Roll failed:", error);
+          isRolling = false;
+          document.getElementById("rollButton").disabled = false;
+          updateAutoRollButton();
         }
-
-        let delay = delays[spinCount];
-        spinCount++;
-
-        setTimeout(spin, delay);
       }
 
       spin();
     }
 
     function finishRoll(item) {
-      rolls++;
-      let coinReward = getCoinReward(item);
-      addCheetCoins(coinReward);
-
-      document.getElementById("rollCount").textContent = rolls;
-      document.getElementById("coinCount").textContent = cheetCoins;
-
-      document.getElementById("resultName").textContent = item.name;
-      showResultImage(item.image);
-      document.getElementById("resultChance").textContent = formatChance(item.chance) + " • +" + coinReward + " coins";
-
-      showRarityAnnouncement(item);
-
-      if (item.name === "Pookowski") {
-        showPookowskiAnimation();
-      }
-
-      document.getElementById("resultName").classList.remove("rolling");
-      document.getElementById("resultImage").classList.remove("rolling");
-      document.getElementById("questionMarkImage").classList.remove("rolling");
-
-      if (inventory[item.name]) {
-        inventory[item.name]++;
-      } else {
-        inventory[item.name] = 1;
-      }
-
-      if (getBestScore(item) > bestScore || bestItem === "None") {
-        bestScore = getBestScore(item);
-        bestChance = item.chance;
-        bestItem = item.name;
-        document.getElementById("bestItem").textContent = bestItem;
-      }
-
-      checkAchievements(item);
-      updateTowers();
-      updateAchievements();
-      updateCoinsAndShop();
-
-      lastAutoRollTime = Date.now();
-
-      savePlayerData().catch(function(error) {
-        console.log("Save failed:", error);
-      });
-      isRolling = false;
-
-      if (currentUser && hasUsername()) {
-        document.getElementById("rollButton").disabled = false;
-      }
-
-      if (autoRollEnabled && currentUser && hasUsername()) {
-        if (autoRollTimeout) {
-          clearTimeout(autoRollTimeout);
+      try {
+        if (!item || !item.name) {
+          throw new Error("Missing rolled item");
         }
-        autoRollTimeout = setTimeout(autoRollTick, 75);
-      }
 
-      updateAutoRollButton();
+        rolls++;
+        let coinReward = getCoinReward(item);
+        addCheetCoins(coinReward);
+
+        document.getElementById("rollCount").textContent = rolls;
+        document.getElementById("coinCount").textContent = cheetCoins;
+        if (document.getElementById("totalCoinCount")) document.getElementById("totalCoinCount").textContent = totalCheetCoinsEarned;
+        if (document.getElementById("hutTotalCoinCount")) document.getElementById("hutTotalCoinCount").textContent = totalCheetCoinsEarned;
+
+        document.getElementById("resultName").textContent = item.name;
+        showResultImage(item.image);
+        document.getElementById("resultChance").textContent = formatChance(item.chance) + " • +" + coinReward + " coins";
+
+        showRarityAnnouncement(item);
+
+        if (item.name === "Pookowski") {
+          showPookowskiAnimation();
+        }
+
+        document.getElementById("resultName").classList.remove("rolling");
+        document.getElementById("resultImage").classList.remove("rolling");
+        document.getElementById("questionMarkImage").classList.remove("rolling");
+
+        inventory[item.name] = Number(inventory[item.name] || 0) + 1;
+
+        if (getBestScore(item) > bestScore || bestItem === "None") {
+          bestScore = getBestScore(item);
+          bestChance = item.chance;
+          bestItem = item.name;
+          document.getElementById("bestItem").textContent = bestItem;
+        }
+
+        checkAchievements(item);
+        updateTowers();
+        updateAchievements();
+        updateCoinsAndShop();
+
+        lastAutoRollTime = Date.now();
+
+        savePlayerData().catch(function(error) {
+          console.log("Save failed:", error);
+        });
+      } catch (error) {
+        console.log("Finish roll failed:", error);
+      } finally {
+        isRolling = false;
+        lastRollStartedTime = 0;
+
+        if (currentUser && hasUsername()) {
+          document.getElementById("rollButton").disabled = false;
+        }
+
+        updateAutoRollButton();
+
+        if (autoRollEnabled && currentUser && hasUsername()) {
+          if (autoRollTimeout) {
+            clearTimeout(autoRollTimeout);
+          }
+          autoRollTimeout = setTimeout(autoRollTick, 150);
+        }
+      }
     }
 
 
@@ -2184,20 +2208,21 @@
         return;
       }
 
+      if (isRolling && Date.now() - lastRollStartedTime > 10000) {
+        console.log("Auto Roll unstuck a frozen roll.");
+        isRolling = false;
+        document.getElementById("rollButton").disabled = false;
+      }
+
       if (!isRolling) {
-        try {
-          rollItem();
-        } catch (error) {
-          console.log("Auto Roll failed:", error);
-          isRolling = false;
-        }
+        rollItem();
       }
 
       if (autoRollTimeout) {
         clearTimeout(autoRollTimeout);
       }
 
-      autoRollTimeout = setTimeout(autoRollTick, 500);
+      autoRollTimeout = setTimeout(autoRollTick, 750);
     }
 
     function updateAutoRollButton() {
