@@ -1422,6 +1422,11 @@
       return 999999;
     }
 
+    function setTextIfExists(id, value) {
+      let element = document.getElementById(id);
+      if (element) element.textContent = value;
+    }
+
     function updateUpgradeButton(type, label) {
       let costSpan = document.getElementById(type + "Cost");
       let button = document.getElementById(type + "UpgradeButton");
@@ -1461,18 +1466,21 @@
       updateUpgradeButton("secret", "Secret Upgrade");
       updateUpgradeButton("coin", "Coin Multiplier");
 
-      document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
-      document.getElementById("luckMultiplierText").textContent = getLuckMultiplier().toFixed(2) + "x";
-      document.getElementById("luckWithDimisText").textContent = (getLuckMultiplier() * 1.2).toFixed(2) + "x";
-      document.getElementById("speedMultiplierText").textContent = getSpeedMultiplier().toFixed(2) + "x speed";
-      document.getElementById("speedWithDimisText").textContent = getSpeedWithDimisText();
-      document.getElementById("secretMultiplierText").textContent = getSecretMultiplier().toFixed(2) + "x";
-      document.getElementById("cheeterMultiplierText").textContent = getCheeterSecretMultiplier().toFixed(2) + "x";
-      document.getElementById("secretWithDimisLuckText").textContent = (getSecretMultiplier() * 1.2).toFixed(2) + "x";
-      document.getElementById("cheeterWithDimisLuckText").textContent = (getCheeterSecretMultiplier() * 1.2).toFixed(2) + "x";
-      document.getElementById("secretWithDimisMiracleText").textContent = (getSecretMultiplier() * 1.35).toFixed(2) + "x";
-      document.getElementById("cheeterWithDimisMiracleText").textContent = (getCheeterSecretMultiplier() * 1.35).toFixed(2) + "x";
-      document.getElementById("coinWithDimisText").textContent = ((1 + upgrades.coin * 0.25) * 2).toFixed(2) + "x";
+      setTextIfExists("coinMultiplierText", getCoinMultiplier().toFixed(2) + "x");
+      setTextIfExists("coinWithDimisText", ((1 + upgrades.coin * 0.25) * 2).toFixed(2) + "x");
+
+      setTextIfExists("luckMultiplierText", getLuckMultiplier().toFixed(2) + "x");
+      setTextIfExists("luckWithDimisText", (getLuckMultiplier() * 1.2).toFixed(2) + "x");
+
+      setTextIfExists("speedMultiplierText", getSpeedMultiplier().toFixed(2) + "x speed");
+      setTextIfExists("speedWithDimisText", getSpeedWithDimisText());
+
+      setTextIfExists("secretMultiplierText", getSecretMultiplier().toFixed(2) + "x");
+      setTextIfExists("cheeterMultiplierText", getCheeterSecretMultiplier().toFixed(2) + "x");
+      setTextIfExists("secretWithDimisLuckText", (getSecretMultiplier() * 1.2).toFixed(2) + "x");
+      setTextIfExists("cheeterWithDimisLuckText", (getCheeterSecretMultiplier() * 1.2).toFixed(2) + "x");
+      setTextIfExists("secretWithDimisMiracleText", (getSecretMultiplier() * 1.35).toFixed(2) + "x");
+      setTextIfExists("cheeterWithDimisMiracleText", (getCheeterSecretMultiplier() * 1.35).toFixed(2) + "x");
 
       document.getElementById("hutStreakCount").textContent = hutStreak;
       document.getElementById("dailyRewardAmount").textContent = getDailyRewardAmount();
