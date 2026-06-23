@@ -883,9 +883,9 @@
           <p>Level: <span id="speedLevel">0</span> / <span id="speedMaxLevelText">20</span></p>
           <p>Makes the roll animation faster.</p>
           <div class="upgrade-stat-list">
-            <div>Each level: +3.23% speed</div>
-            <div>Current speed: <span id="speedMultiplierText">1.00x</span></div>
-            <div>With DIMIS Speed: <span id="speedWithDimisText">1.25x</span></div>
+            <div>Each level: +0.04x speed</div>
+            <div>Current speed: <span id="speedMultiplierText">1.00x speed</span></div>
+            <div>With DIMIS Speed: <span id="speedWithDimisText">1.25x speed</span></div>
           </div>
           <p>Cost: <span id="speedCost">750</span> coins</p>
           <button id="speedUpgradeButton" onclick="buyUpgrade('speed')">Buy Faster Rolls</button>
@@ -945,7 +945,7 @@
             <div>At 100 points: random 15-minute blessing</div>
             <div>🍀 Luck: 1.20x rare odds</div>
             <div>💰 Coins: 2.00x Cheet Coins</div>
-            <div>⚡ Speed: 1.25x</div>
+            <div>⚡ Speed: 1.25x speed</div>
             <div>🌌 Miracle: 1.35x secret / cheeter odds</div>
           </div>
           <button onclick="worshipDimis()">Worship DIMIS</button>
@@ -1245,6 +1245,16 @@
       return activeBlessing.type;
     }
 
+    function getSpeedMultiplier() {
+      let multiplier = 1 + upgrades.speed * 0.04;
+
+      if (multiplier > 3.33) {
+        multiplier = 3.33;
+      }
+
+      return multiplier;
+    }
+
     function getCoinMultiplier() {
       let multiplier = 1 + upgrades.coin * 0.25;
 
@@ -1283,14 +1293,7 @@
     }
 
     function getSpeedWithDimisText() {
-      let speedMultiplier = 1 - upgrades.speed * 0.03125;
-      speedMultiplier *= 0.8;
-
-      if (speedMultiplier < 0.30) {
-        speedMultiplier = 0.30;
-      }
-
-      return (1 / speedMultiplier).toFixed(2) + "x";
+      return (getSpeedMultiplier() * 1.25).toFixed(2) + "x speed";
     }
 
     function getDailyRewardAmount() {
@@ -1436,7 +1439,7 @@
       document.getElementById("coinMultiplierText").textContent = getCoinMultiplier().toFixed(2) + "x";
       document.getElementById("luckMultiplierText").textContent = getLuckMultiplier().toFixed(2) + "x";
       document.getElementById("luckWithDimisText").textContent = (getLuckMultiplier() * 1.2).toFixed(2) + "x";
-      document.getElementById("speedMultiplierText").textContent = getSpeedDisplayMultiplier().toFixed(2) + "x";
+      document.getElementById("speedMultiplierText").textContent = getSpeedMultiplier().toFixed(2) + "x speed";
       document.getElementById("speedWithDimisText").textContent = getSpeedWithDimisText();
       document.getElementById("secretMultiplierText").textContent = getSecretMultiplier().toFixed(2) + "x";
       document.getElementById("cheeterMultiplierText").textContent = getCheeterSecretMultiplier().toFixed(2) + "x";
